@@ -58,7 +58,7 @@ public class JournalEntryController {
             Optional<JournalEntry> journalEntry = journalEntryService.findById(myId);
             if(journalEntry.isPresent())
                 return new ResponseEntity<>(journalEntry.get(), HttpStatus.OK);
-            return new ResponseEntity<>(collect.getFirst(), HttpStatus.OK);
+            return new ResponseEntity<>(collect.get(0), HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
