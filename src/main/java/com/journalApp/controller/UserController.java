@@ -53,7 +53,11 @@ public class UserController {
     @GetMapping()
     public ResponseEntity<?> greeting (){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+<<<<<<< HEAD
         WeatherResponse weatherResponse = weatherService.getWeather();
+=======
+        WeatherResponse weatherResponse = weatherService.getWeather("Mumbai");
+>>>>>>> be3bd1c (Added Email Scheduler and Redis Cloud)
         List<QuoteResponse> quoteResponse = quoteService.getQuote();
         String quote = "";
         String weather = "";
