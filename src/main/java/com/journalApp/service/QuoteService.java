@@ -18,8 +18,6 @@ public class QuoteService {
     @Value("${ApiKey.quote}")
     private String apiKey;
 
-    private static final String API = "https://api.api-ninjas.com/v1/quotes?X-Api-Key=API_KEY";
-
     @Autowired
     private AppCache appCache;
 
@@ -27,7 +25,7 @@ public class QuoteService {
     private RestTemplate restTemplate;
 
     public List<QuoteResponse> getQuote() {
-        String finalAPI = appCache.appCache.get(AppCache.keys.QUOTE_API.toString()).replace("<API_KEY>", apiKey);
+        String finalAPI = appCache.getAppCache().get(AppCache.keys.QUOTE_API.toString()).replace("<API_KEY>", apiKey);
         ResponseEntity<List<QuoteResponse>> response = restTemplate.exchange(
                 finalAPI,
                 HttpMethod.GET,

@@ -3,6 +3,7 @@ package com.journalApp.cache;
 import com.journalApp.entity.ConfigJournalApp;
 import com.journalApp.repository.ConfigJournalAppRepository;
 import jakarta.annotation.PostConstruct;
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -21,7 +22,8 @@ public class AppCache {
     @Autowired
     private ConfigJournalAppRepository configJournalAppRepository;
 
-    public Map<String, String> appCache;
+    @Getter
+    private Map<String, String> appCache;
 
     @PostConstruct
     public void init(){

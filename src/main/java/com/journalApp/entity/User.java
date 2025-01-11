@@ -1,5 +1,6 @@
 package com.journalApp.entity;
 
+import jakarta.validation.constraints.NotEmpty;
 import lombok.*;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
@@ -19,12 +20,12 @@ public class User {
 
     @Id
     private ObjectId id;
+    @NotEmpty
     @Indexed(unique = true)
-    @NonNull
     private String userName;
     private String email;
     private boolean sentimentAnalysis;
-    @NonNull
+    @NotEmpty
     private String password;
     @DBRef
     private List<JournalEntry> journalEntryList = new ArrayList<>();

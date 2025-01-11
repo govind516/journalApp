@@ -2,11 +2,14 @@ package com.journalApp.controller;
 
 import com.journalApp.api.response.QuoteResponse;
 import com.journalApp.api.response.WeatherResponse;
+import com.journalApp.dto.UserDTO;
 import com.journalApp.entity.User;
 import com.journalApp.repository.UserRepository;
 import com.journalApp.service.QuoteService;
 import com.journalApp.service.UserService;
 import com.journalApp.service.WeatherService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +21,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/user")
+@Tag(name = "2. User APIs", description = "Update, Delete and Greetings")
 public class UserController {
 
     @Autowired
@@ -33,7 +37,8 @@ public class UserController {
     private WeatherService weatherService;
 
     @PutMapping()
-    public ResponseEntity<?> updateUser(@RequestBody User user){
+    @Operation(summary = "Update User")
+    public ResponseEntity<Void> updateUser(@RequestBody UserDTO user){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         String userName = authentication.getName();
         User userInDb = userService.findByUserName(userName);
@@ -44,14 +49,16 @@ public class UserController {
     }
 
     @DeleteMapping()
-    public ResponseEntity<?> deleteUserById (){
+    @Operation(summary = "Delete User by ID")
+    public ResponseEntity<Void> deleteUserById (){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         userRepository.deleteByUserName(authentication.getName());
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @GetMapping()
-    public ResponseEntity<?> greeting (){
+    @Operation(summary = "User Greetings")
+    public ResponseEntity<String> greeting (){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         WeatherResponse weatherResponse = weatherService.getWeather("Mumbai");
         List<QuoteResponse> quoteResponse = quoteService.getQuote();
@@ -62,7 +69,7 @@ public class UserController {
             weather = "\nWeather feels like " + weatherResponse.getCurrent().getFeelslike();
         }
         if(quoteResponse != null && !quoteResponse.isEmpty()){
-            quote = "\nToday's Quote : " +  quoteResponse.get(0).getQuote();
+            quote = "\nToday's Quote : " +  quoteResponse.getFirst().getQuote();
         }
         return new ResponseEntity<>("Hi " + authentication.getName() + weather + quote, HttpStatus.OK);
     }

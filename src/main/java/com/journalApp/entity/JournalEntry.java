@@ -1,9 +1,9 @@
 package com.journalApp.entity;
 
 import com.journalApp.enums.Sentiment;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -17,7 +17,7 @@ public class JournalEntry {
 
     @Id
     private ObjectId id;
-    @NonNull
+    @NotEmpty
     private String title;
     private String content;
     private LocalDateTime date;

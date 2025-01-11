@@ -13,26 +13,29 @@ import java.util.concurrent.TimeUnit;
 public class RedisService {
 
     @Autowired
-    private RedisTemplate redisTemplate;
+    private RedisTemplate<String, String> redisTemplate;
 
-    public <T> T get(String key, Class<T> entityClass){
+    public <T> T get(String key, Class<T> entityClass) {
         try {
-            Object object = redisTemplate.opsForValue().get(key);
+            String jsonValue = redisTemplate.opsForValue().get(key);
+            if (jsonValue == null) {
+                return null;
+            }
             ObjectMapper mapper = new ObjectMapper();
-            return mapper.readValue(object.toString(), entityClass);
-        }catch (Exception e){
-            log.error("Exception : ", e);
+            return mapper.readValue(jsonValue, entityClass);
+        } catch (Exception e) {
+            log.error("Exception: ", e);
             return null;
         }
     }
 
-    public void set(String key, Object object, Long ttl){
+    public void set(String key, Object object, Long ttl) {
         try {
             ObjectMapper mapper = new ObjectMapper();
             String jsonValue = mapper.writeValueAsString(object);
             redisTemplate.opsForValue().set(key, jsonValue, ttl, TimeUnit.SECONDS);
-        }catch (Exception e){
-            log.error("Exception : ", e);
+        } catch (Exception e) {
+            log.error("Exception: ", e);
         }
     }
 }
