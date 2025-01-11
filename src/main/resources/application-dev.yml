@@ -1,0 +1,41 @@
+spring:
+  config:
+    import: optional:file:.env
+  application:
+    name: Journal App
+  data:
+    mongodb:
+      uri: ${MONGODB_URI}
+      database: ${MONGODB_DATABASE}
+    redis:
+      url: ${REDIS_URL}
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+    properties:
+      sasl.jaas.config: ${KAFKA_SASL_JAAS_CONFIG}
+      sasl.mechanism: PLAIN
+      security.protocol: SASL_SSL
+      session.timeout.ms: 45000
+      client.id: ${KAFKA_CLIENT_ID}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      group-id: weekly-sentiment-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+  main:
+    allow-circular-references: true
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+  mail:
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+
