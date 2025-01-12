@@ -1,6 +1,6 @@
 # Journal App
 
-A personal journal application where users can create, update, delete, and view journal entries. The app also includes features like sentiment analysis on journal content, email notifications, and API integrations for quotes and weather.
+The Journal App is a secure, high-performance application that manages journal entries. It offers features for users to create, update, delete, and view journal entries while integrating OAuth 2.0 login for secure authentication. The app also supports caching and messaging via Redis and Kafka, respectively, to enhance performance and scalability. The app also includes features like sentiment analysis on journal content, email notifications, and API integrations for quotes and weather.
 
 ![image](https://github.com/user-attachments/assets/1e131ff5-ced9-4e36-ab1f-011ad82eaf44)
 
@@ -44,25 +44,16 @@ A personal journal application where users can create, update, delete, and view 
    cd journalApp
    ```
 
-2. **Set up Kafka (optional)**:
-   
-   - Install and run Kafka locally or use a cloud-based service.
-     
-   ```bash
-   kafka:
-     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
-       properties:
-         sasl.jaas.config: ${KAFKA_SASL_JAAS_CONFIG}
-         sasl.mechanism: PLAIN
-         security.protocol: SASL_SSL
-         session.timeout.ms: 45000
-         client.id: ${KAFKA_CLIENT_ID}
-   ```
+2. **API Integrations**:
+
+   - Sign up at WeatherStack and API Ninjas to get API keys.
+   - **Weather API**: Fetch weather data based on the user's location.
+   - **Quote API**: Get inspirational quotes for the user.
    
 3. **Set up MongoDB, Redis and Kafka (optional)**:
-   - Setup account on MongoDB Atlas and Redis Cloud.
+   - Set up an account on MongoDB Atlas and Redis Cloud.
    - Install and run Kafka locally or use a cloud-based service.
-   - Ensure Both Redis and MongoDB are running with you whitelisted IP.
+   - Ensure Both Redis and MongoDB are running with your whitelisted IP.
 
    ```bash
    spring:
@@ -127,45 +118,13 @@ A personal journal application where users can create, update, delete, and view 
    - Alternatively, visit Swagger UI at `http://localhost:8080/swagger-ui/index.html`.
    - You can now start creating and managing journal entries.
 
-
-# API Documentation
-
-1. **Public APIs**
-
-   - Sign Up - POST /public/signup  
-   - Login - POST /public/login  
-   - Health Check - GET /public/health-check  
-
-2. **User APIs**
-
-   - Get User Greetings - GET /user  
-   - Update User - PUT /user  
-   - Delete User - DELETE /user  
-
-3. **Journal Entry APIs**
-
-   - Get Journal Entry - GET /journal/id/{myId}  
-   - Update Journal Entry - PUT /journal/id/{myId}  
-   - Delete Journal Entry - DELETE /journal/id/{myId}  
-   - Get All Journal Entries - GET /journal  
-   - Create Journal Entry - POST /journal  
-
-4. **Admin APIs**
-
-   - Create Admin - POST /admin/create-admin  
-   - Clear App Cache - GET /admin/clear-app-cache  
-   - Get All Users - GET /admin/all-users  
-
-5. **Google OAuth2 APIs**
-
-   - Google Callback - GET /auth/google/callback
      
 ## Usage
 
 ### Authentication
 
 - Users can register by providing their username and password.
-- Admins can access a broader set of functionalities (e.g., viewing all users’ entries).
+- Admins can access broader functionalities (e.g., viewing all users’ entries).
 
 ### Journal Entries
 
@@ -176,23 +135,14 @@ A personal journal application where users can create, update, delete, and view 
 - Every journal entry is analyzed for sentiment based on predefined rules.
 - Weekly sentiment summaries are sent to users via Kafka or email.
 
-### API Integrations
-
-- **Weather API**: Fetch weather data based on user's location.
-- **Quote API**: Get inspirational quotes for the user.
-
 ## Scheduled Tasks
 
 - Weekly, a scheduled task runs to analyze user sentiments for the last 7 days and sends an email or Kafka message.
 
 ## Contributing
 
-Feel free to fork this project and submit pull requests. Please ensure your contributions follow the project's coding style and that tests are included for new features.
+Feel free to fork out this project and submit pull requests. Please ensure your contributions follow the project's coding style and that tests are included for new features.
 
 ## License
 
 Distributed under the MIT License. See `LICENSE` for more information.
-
----
-
-You can customize the sections according to your app's features, configurations, and other details.
