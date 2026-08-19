@@ -1,11 +1,23 @@
 package com.journalApp.api.response;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Getter;
-
-@Getter
 public class QuoteResponse {
 
-    @JsonProperty("quote")
+    private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(QuoteResponse.class.getName());
+
     public String quote;
+
+    public QuoteResponse() {
+    }
+
+    public QuoteResponse(String quote) {
+        this.quote = quote;
+    }
+
+    public String getQuote() {
+        return quote;
+    }
+
+    public void setQuote(String quote) {
+        this.quote = quote;
+    }
 }

@@ -72,7 +72,7 @@ public class JournalEntryController {
         if(!collect.isEmpty()){
             Optional<JournalEntry> journalEntry = journalEntryService.findById(objectId);
             return journalEntry.map(entry -> new ResponseEntity<>(entry, HttpStatus.OK))
-                    .orElseGet(() -> new ResponseEntity<>(collect.getFirst(), HttpStatus.OK));
+                    .orElseGet(() -> new ResponseEntity<>(collect.get(0), HttpStatus.OK));
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }

@@ -1,10 +1,11 @@
 package com.journalApp.service;
 
+import org.bson.types.ObjectId;
 import com.journalApp.entity.JournalEntry;
 import com.journalApp.entity.User;
 import com.journalApp.repository.JournalEntryRepository;
-import lombok.extern.slf4j.Slf4j;
-import org.bson.types.ObjectId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,8 +15,9 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-@Slf4j
 public class JournalEntryService {
+
+    private static final Logger log = LoggerFactory.getLogger(JournalEntryService.class);
 
     @Autowired
     private JournalEntryRepository journalEntryRepository;
@@ -65,5 +67,3 @@ public class JournalEntryService {
         return removed;
     }
 }
-
-// Controller --> Service --> Repository

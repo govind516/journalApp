@@ -3,8 +3,8 @@ package com.journalApp.controller;
 import com.journalApp.service.GoogleAuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.extern.slf4j.Slf4j;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,13 +12,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.*;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/auth/google")
-@Slf4j
 @Tag(name = "5. Google OAuth2 APIs")
 public class GoogleAuthController {
+
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(GoogleAuthController.class);
 
     @Autowired
     private GoogleAuthService googleAuthService;
@@ -34,15 +35,3 @@ public class GoogleAuthController {
         }
     }
 }
-
-/*
-
-https://accounts.google.com/o/oauth2/auth?
-client_id=YOUR_CLIENT_ID
-    &redirect_uri=YOUR_REDIRECT_URI
-    &response_type=code
-    &scope=email profile
-    &access_type=offline
-    &prompt=consent
-
-*/

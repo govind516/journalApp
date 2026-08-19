@@ -69,10 +69,7 @@ public class UserScheduler {
 
     // Send sentiment data through Kafka or email
     private void sendSentimentData(String email, Sentiment sentiment) {
-        SentimentData sentimentData = SentimentData.builder()
-                .email(email)
-                .sentiment("Sentiment for last 7 days: " + sentiment)
-                .build();
+        SentimentData sentimentData = new SentimentData(email, "Sentiment for last 7 days: " + sentiment);
 
         try {
             kafkaTemplate.send("weekly-sentiments", sentimentData.getEmail(), sentimentData);

@@ -3,7 +3,8 @@ package com.journalApp.cache;
 import com.journalApp.entity.ConfigJournalApp;
 import com.journalApp.repository.ConfigJournalAppRepository;
 import jakarta.annotation.PostConstruct;
-import lombok.Getter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -14,7 +15,9 @@ import java.util.Map;
 @Component
 public class AppCache {
 
-    public enum keys{
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(AppCache.class);
+
+    public enum keys {
         WEATHER_API,
         QUOTE_API
     }
@@ -22,15 +25,24 @@ public class AppCache {
     @Autowired
     private ConfigJournalAppRepository configJournalAppRepository;
 
-    @Getter
     private Map<String, String> appCache;
 
     @PostConstruct
-    public void init(){
+    public void init() {
+        log.info("Initializing AppCache...");
         appCache = new HashMap<>();
         List<ConfigJournalApp> all = configJournalAppRepository.findAll();
-        for(ConfigJournalApp configJournalApp : all){
+        for (ConfigJournalApp configJournalApp : all) {
             appCache.put(configJournalApp.getKey(), configJournalApp.getValue());
         }
+        log.info("AppCache initialized with {} entries", appCache.size());
+    }
+
+    public Map<String, String> getAppCache() {
+        return appCache;
+    }
+
+    public void setAppCache(Map<String, String> appCache) {
+        this.appCache = appCache;
     }
 }

@@ -69,10 +69,8 @@ public class UserController {
             weather = "\nWeather feels like " + weatherResponse.getCurrent().getFeelslike();
         }
         if(quoteResponse != null && !quoteResponse.isEmpty()){
-            quote = "\nToday's Quote : " +  quoteResponse.getFirst().getQuote();
+            quote = "\nToday's Quote : " +  quoteResponse.get(0).getQuote();
         }
         return new ResponseEntity<>("Hi " + authentication.getName() + weather + quote, HttpStatus.OK);
     }
 }
-
-// Controller --> Service --> Repository

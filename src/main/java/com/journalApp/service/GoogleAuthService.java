@@ -3,7 +3,8 @@ package com.journalApp.service;
 import com.journalApp.entity.User;
 import com.journalApp.repository.UserRepository;
 import com.journalApp.utils.JwtUtil;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -12,12 +13,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
-
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.Collections;
 
 @Service
-@Slf4j
 public class GoogleAuthService {
+
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(GoogleAuthService.class);
 
     @Value("${spring.security.oauth2.client.registration.google.client-id}")
     private String clientId;
@@ -40,7 +44,7 @@ public class GoogleAuthService {
     public ResponseEntity<Map<String, String>> processGoogleCallback(String code) {
         try {
             String tokenEndpoint = "https://oauth2.googleapis.com/token";
-            MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+            LinkedMultiValueMap<String, String> params = new LinkedMultiValueMap<>();
             params.add("code", code);
             params.add("client_id", clientId);
             params.add("client_secret", clientSecret);
@@ -49,7 +53,7 @@ public class GoogleAuthService {
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-            HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
+            HttpEntity<LinkedMultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
 
             ResponseEntity<Map> tokenResponse = restTemplate.postForEntity(tokenEndpoint, request, Map.class);
             String idToken = (String) tokenResponse.getBody().get("id_token");
@@ -83,4 +87,3 @@ public class GoogleAuthService {
         }
     }
 }
-

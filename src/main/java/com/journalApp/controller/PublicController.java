@@ -7,7 +7,8 @@ import com.journalApp.service.UserService;
 import com.journalApp.utils.JwtUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
@@ -17,17 +18,20 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-@Slf4j
-@RestController
+import java.util.logging.Level;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 @RequestMapping("/public")
 @Tag(name = "1. Public APIs", description = "Health Check, SignUp, Login")
 public class PublicController {
+
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(PublicController.class);
 
     @Autowired
     private UserService userService;
 
     @Autowired
-    private UserDetailsServiceImpl  userDetailsService;
+    private UserDetailsServiceImpl userDetailsService;
 
     @Autowired
     private AuthenticationManager authenticationManager;

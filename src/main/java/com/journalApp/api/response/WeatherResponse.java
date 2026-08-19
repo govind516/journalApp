@@ -1,23 +1,51 @@
 package com.journalApp.api.response;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Getter;
-
 import java.util.List;
 
-@Getter
 public class WeatherResponse {
+
+    private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(WeatherResponse.class.getName());
 
     private Current current;
 
-    @Getter
-    public static class Current{
+    public Current getCurrent() {
+        return current;
+    }
 
-        private int temprature;
+    public void setCurrent(Current current) {
+        this.current = current;
+    }
 
-        @JsonProperty("weather_descriptions")
+    public static class Current {
+
+        private int temperature;
+
         private List<String> weatherDescriptions;
 
         private int feelslike;
+
+        public int getTemperature() {
+            return temperature;
+        }
+
+        public void setTemperature(int temperature) {
+            this.temperature = temperature;
+        }
+
+        public List<String> getWeatherDescriptions() {
+            return weatherDescriptions;
+        }
+
+        public void setWeatherDescriptions(List<String> weatherDescriptions) {
+            this.weatherDescriptions = weatherDescriptions;
+        }
+
+        public int getFeelslike() {
+            return feelslike;
+        }
+
+        public void setFeelslike(int feelslike) {
+            this.feelslike = feelslike;
+        }
     }
 }
