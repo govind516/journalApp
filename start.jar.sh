@@ -20,9 +20,14 @@ exec java -jar "$JAR_FILE" \
   -Dspring.redis.url="${REDIS_URL}" \
   -Dspring.kafka.bootstrap-servers="${KAFKA_BOOTSTRAP_SERVERS}" \
   -Dspring.kafka.properties.sasl.jaas.config="${KAFKA_SASL_JAAS_CONFIG}" \
+  -Dspring.kafka.client-id="${KAFKA_CLIENT_ID}" \
   -Dspring.security.oauth2.client.registration.google.client-id="${GOOGLE_CLIENT_ID}" \
   -Dspring.security.oauth2.client.registration.google.client-secret="${GOOGLE_CLIENT_SECRET}" \
-  -Dmail.username="${MAIL_USERNAME}" \
-  -Dmail.password="${MAIL_PASSWORD}" \
+  -Dgoogle.redirect-uri="${GOOGLE_REDIRECT_URI}" \
+  -Dspring.mail.username="${MAIL_USERNAME}" \
+  -Dspring.mail.password="${MAIL_PASSWORD}" \
   -Djwt.secret="${JWT_SECRET}" \
+  -DApiKey.weather="${WEATHER_API_KEY}" \
+  -DApiKey.quote="${QUOTE_API_KEY}" \
+  -Dcors.allowed-origins="${CORS_ALLOWED_ORIGINS}" \
   --spring.main.allow-circular-references=true
