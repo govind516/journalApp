@@ -7,6 +7,7 @@ import com.journalApp.enums.Sentiment;
 import com.journalApp.model.SentimentData;
 import com.journalApp.repositoryImpl.UserRepositoryImpl;
 import com.journalApp.service.EmailService;
+import com.journalApp.service.JournalEntryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -24,6 +25,9 @@ public class UserScheduler {
     private UserRepositoryImpl userRepository;
 
     @Autowired
+    private JournalEntryService journalEntryService;
+
+    @Autowired
     private EmailService emailService;
 
     @Autowired
@@ -36,7 +40,7 @@ public class UserScheduler {
     public void fetchUsersAndSendSaMail() {
         List<User> users = userRepository.getUserForSA();
         for (User user : users) {
-            List<JournalEntry> journalEntries = user.getJournalEntryList();
+            List<JournalEntry> journalEntries = journalEntryService.findByUserName(user.getUserName());
             List<Sentiment> sentiments = extractRecentSentiments(journalEntries);
             Sentiment mostFrequentSentiment = getMostFrequentSentiment(sentiments);
             if (mostFrequentSentiment != null) {
@@ -45,15 +49,13 @@ public class UserScheduler {
         }
     }
 
-    // Extract sentiments from journal entries within the last 7 days
     private List<Sentiment> extractRecentSentiments(List<JournalEntry> journalEntries) {
         return journalEntries.stream()
-                .filter(x -> x.getDate().isAfter(LocalDateTime.now().minusDays(7)))
+                .filter(x -> x.getDate() != null && x.getDate().isAfter(LocalDateTime.now().minusDays(7)))
                 .map(JournalEntry::getSentiment)
                 .toList();
     }
 
-    // Get the most frequent sentiment from the list of sentiments
     private Sentiment getMostFrequentSentiment(List<Sentiment> sentiments) {
         Map<Sentiment, Integer> sentimentCounts = new EnumMap<>(Sentiment.class);
         for (Sentiment sentiment : sentiments) {
@@ -67,7 +69,6 @@ public class UserScheduler {
                 .orElse(null);
     }
 
-    // Send sentiment data through Kafka or email
     private void sendSentimentData(String email, Sentiment sentiment) {
         SentimentData sentimentData = new SentimentData(email, "Sentiment for last 7 days: " + sentiment);
 
@@ -83,4 +84,3 @@ public class UserScheduler {
         appCache.init();
     }
 }
-

@@ -4,7 +4,6 @@ import jakarta.validation.constraints.NotEmpty;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.ArrayList;
@@ -27,21 +26,17 @@ public class User {
     @NotEmpty
     private String password;
 
-    @DBRef
-    private List<JournalEntry> journalEntryList = new ArrayList<>();
-
     private List<String> roles;
 
     public User() {
     }
 
-    public User(ObjectId id, String userName, String email, boolean sentimentAnalysis, String password, List<JournalEntry> journalEntryList, List<String> roles) {
+    public User(ObjectId id, String userName, String email, boolean sentimentAnalysis, String password, List<String> roles) {
         this.id = id;
         this.userName = userName;
         this.email = email;
         this.sentimentAnalysis = sentimentAnalysis;
         this.password = password;
-        this.journalEntryList = journalEntryList != null ? journalEntryList : new ArrayList<>();
         this.roles = roles != null ? roles : new ArrayList<>();
     }
 
@@ -83,14 +78,6 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    public List<JournalEntry> getJournalEntryList() {
-        return journalEntryList;
-    }
-
-    public void setJournalEntryList(List<JournalEntry> journalEntryList) {
-        this.journalEntryList = journalEntryList != null ? journalEntryList : new ArrayList<>();
     }
 
     public List<String> getRoles() {
