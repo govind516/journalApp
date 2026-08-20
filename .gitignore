@@ -12,9 +12,9 @@ target/
 .settings
 .springBeans
 .sts4-cache
-*.yml
+
+### Java / Spring ###
 *.log
-*.env
 /htmlReport
 
 ### IntelliJ IDEA ###
@@ -35,3 +35,11 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Environment ###
+*.env
+
+### Node / React ###
+client/node_modules/
+client/dist/
+client/.env

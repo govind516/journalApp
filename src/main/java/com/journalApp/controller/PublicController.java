@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.logging.Level;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+@RestController
 @RequestMapping("/public")
 @Tag(name = "1. Public APIs", description = "Health Check, SignUp, Login")
 public class PublicController {
