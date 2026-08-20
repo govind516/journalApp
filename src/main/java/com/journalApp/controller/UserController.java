@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
 @RestController
 @RequestMapping("/user")
 @Tag(name = "2. User APIs", description = "Update, Delete and Greetings")
@@ -36,6 +38,9 @@ public class UserController {
     @Autowired
     private WeatherService weatherService;
 
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
+
     @PutMapping()
     @Operation(summary = "Update User")
     public ResponseEntity<Void> updateUser(@RequestBody UserDTO user){
@@ -43,7 +48,7 @@ public class UserController {
         String userName = authentication.getName();
         User userInDb = userService.findByUserName(userName);
         userInDb.setUserName(user.getUserName());
-        userInDb.setPassword(user.getPassword());
+        userInDb.setPassword(passwordEncoder.encode(user.getPassword()));
         userService.saveNewUser(userInDb);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT) ;
     }

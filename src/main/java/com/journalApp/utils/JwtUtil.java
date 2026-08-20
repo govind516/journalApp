@@ -1,5 +1,6 @@
 package com.journalApp.utils;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -12,8 +13,13 @@ import java.util.Map;
 @Component
 public class JwtUtil {
 
+    private final String secretKey;
+
+    public JwtUtil(@Value("${jwt.secret}") String secretKey) {
+        this.secretKey = secretKey;
+    }
+
     private SecretKey getSigningKey() {
-        String secretKey = "TaK+HaV^uvCHEFsEVfypW#7g9^k*Z8$V";
         return Keys.hmacShaKeyFor(secretKey.getBytes());
     }
 
@@ -50,7 +56,7 @@ public class JwtUtil {
                 .header().empty().add("typ","JWT")
                 .and()
                 .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 50)) // 5 minutes expiration time
+                .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 30)) // 30 minutes
                 .signWith(getSigningKey())
                 .compact();
     }
