@@ -48,8 +48,10 @@ public class UserController {
         String userName = authentication.getName();
         User userInDb = userService.findByUserName(userName);
         userInDb.setUserName(user.getUserName());
-        userInDb.setPassword(passwordEncoder.encode(user.getPassword()));
-        userService.saveNewUser(userInDb);
+        if (user.getPassword() != null && !user.getPassword().isBlank()) {
+            userInDb.setPassword(passwordEncoder.encode(user.getPassword()));
+        }
+        userService.saveUser(userInDb);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT) ;
     }
 

@@ -36,6 +36,4 @@ spring:
   mail:
     username: ${MAIL_USERNAME}
     password: ${MAIL_PASSWORD}
-  jwt:
-    secret: secret-key-change-in-production
 

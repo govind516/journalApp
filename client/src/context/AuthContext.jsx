@@ -14,6 +14,7 @@ export function AuthProvider({ children }) {
     setError(null);
     try {
       const res = await authAPI.login({ userName, password: pwd });
+      localStorage.setItem('token', res.data);
       setToken(res.data);
       setPassword(pwd);
       return true;
@@ -44,7 +45,9 @@ export function AuthProvider({ children }) {
     setError(null);
     try {
       const res = await authAPI.googleCallback(code);
-      setToken(res.data.token);
+      const token = res.data.token || res.data;
+      localStorage.setItem('token', token);
+      setToken(token);
       return true;
     } catch (err) {
       setError(err.response?.data || 'Google login failed');

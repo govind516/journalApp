@@ -114,7 +114,7 @@ export default function Dashboard() {
               </p>
               <div className="entry-actions">
                 <Link to={`/journal/${entry.id}`} className="btn btn-sm">View</Link>
-                <Link to={`/journal/${entry.id}/edit`} className="btn btn-sm btn-outline">Edit</Link>
+                <Link to={`/journal/${entry.id}`} className="btn btn-sm btn-outline">Edit</Link>
                 <button className="btn btn-sm btn-danger" onClick={() => handleDelete(entry.id)}>
                   Delete
                 </button>

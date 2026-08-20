@@ -25,13 +25,18 @@ public class QuoteService {
     private RestTemplate restTemplate;
 
     public List<QuoteResponse> getQuote() {
-        String finalAPI = appCache.getAppCache().get(AppCache.keys.QUOTE_API.toString()).replace("<API_KEY>", apiKey);
+        String cacheKey = appCache.getAppCache().get(AppCache.keys.QUOTE_API.toString());
+        if (cacheKey == null) {
+            return List.of();
+        }
+        String finalAPI = cacheKey.replace("<API_KEY>", apiKey);
         ResponseEntity<List<QuoteResponse>> response = restTemplate.exchange(
                 finalAPI,
                 HttpMethod.GET,
                 null,
                 new ParameterizedTypeReference<List<QuoteResponse>>() {}
         );
-        return response.getBody();
+        List<QuoteResponse> body = response.getBody();
+        return body != null ? body : List.of();
     }
 }

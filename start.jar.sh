@@ -19,7 +19,7 @@ exec java -jar "$JAR_FILE" \
   -Dspring.data.mongodb.database="${MONGODB_DATABASE}" \
   -Dspring.redis.url="${REDIS_URL}" \
   -Dspring.kafka.bootstrap-servers="${KAFKA_BOOTSTRAP_SERVERS}" \
-  -Dspring.sasl.jaas.config="${KAFKA_SASL_JAAS_CONFIG}" \
+  -Dspring.kafka.properties.sasl.jaas.config="${KAFKA_SASL_JAAS_CONFIG}" \
   -Dspring.security.oauth2.client.registration.google.client-id="${GOOGLE_CLIENT_ID}" \
   -Dspring.security.oauth2.client.registration.google.client-secret="${GOOGLE_CLIENT_SECRET}" \
   -Dmail.username="${MAIL_USERNAME}" \
