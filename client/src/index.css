@@ -208,6 +208,36 @@ a:hover { text-decoration: underline; }
 .table th { font-weight: 600; background: var(--bg); }
 .table tr:hover td { background: #f1f5f9; }
 
+/* Google OAuth callback states */
+.google-status-processing,
+.google-status-success,
+.google-status-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 0;
+}
+.google-status-processing h3,
+.google-status-success h3,
+.google-status-error h3 { margin: 0; }
+.google-status-processing p,
+.google-status-success p,
+.google-status-error p { color: var(--text-muted); font-size: 0.875rem; }
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.btn-google:disabled { opacity: 0.7; cursor: not-allowed; }
+.google-loading { font-size: 0.85rem; }
+
 /* Responsive */
 @media (max-width: 640px) {
   .navbar { padding: 0.5rem 1rem; }

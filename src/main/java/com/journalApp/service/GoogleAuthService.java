@@ -13,21 +13,25 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.Collections;
 
 @Service
 public class GoogleAuthService {
 
-    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(GoogleAuthService.class);
+    private static final Logger log = LoggerFactory.getLogger(GoogleAuthService.class);
 
     @Value("${spring.security.oauth2.client.registration.google.client-id}")
     private String clientId;
 
     @Value("${spring.security.oauth2.client.registration.google.client-secret}")
     private String clientSecret;
+
+    @Value("${google.redirect-uri}")
+    private String redirectUri;
 
     @Autowired
     private RestTemplate restTemplate;
@@ -43,47 +47,81 @@ public class GoogleAuthService {
 
     public ResponseEntity<Map<String, String>> processGoogleCallback(String code) {
         try {
-            String tokenEndpoint = "https://oauth2.googleapis.com/token";
-            LinkedMultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-            params.add("code", code);
-            params.add("client_id", clientId);
-            params.add("client_secret", clientSecret);
-            params.add("redirect_uri", "https://developers.google.com/oauthplayground");
-            params.add("grant_type", "authorization_code");
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-            HttpEntity<LinkedMultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
-
-            ResponseEntity<Map> tokenResponse = restTemplate.postForEntity(tokenEndpoint, request, Map.class);
-            String idToken = (String) tokenResponse.getBody().get("id_token");
-
-            String userInfoUrl = "https://oauth2.googleapis.com/tokeninfo?id_token=" + idToken;
-            ResponseEntity<Map> userInfoResponse = restTemplate.getForEntity(userInfoUrl, Map.class);
-
-            if (userInfoResponse.getStatusCode() == HttpStatus.OK) {
-                Map<String, Object> userInfo = userInfoResponse.getBody();
-                assert userInfo != null;
-                String email = (String) userInfo.get("email");
-
-                userRepository.findByEmail(email).orElseGet(() -> {
-                    User newUser = new User();
-                    newUser.setEmail(email);
-                    newUser.setUserName(email);
-                    newUser.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
-                    newUser.setRoles(List.of("USER"));
-                    userRepository.save(newUser);
-                    return newUser;
-                });
-
-                String jwtToken = jwtUtil.generateToken(email);
-                return ResponseEntity.ok(Collections.singletonMap("token", jwtToken));
+            String idToken = exchangeCodeForIdToken(code);
+            if (idToken == null) {
+                log.error("Failed to obtain id_token from Google");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Collections.singletonMap("error", "Failed to authenticate with Google"));
             }
 
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            String email = getEmailFromIdToken(idToken);
+            if (email == null) {
+                log.error("Failed to extract email from Google id_token");
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Collections.singletonMap("error", "Could not retrieve email from Google"));
+            }
+
+            createOrUpdateGoogleUser(email);
+
+            String jwtToken = jwtUtil.generateToken(email);
+            return ResponseEntity.ok(Collections.singletonMap("token", jwtToken));
+
         } catch (Exception e) {
             log.error("Error during Google authentication", e);
-            throw new RuntimeException("Google authentication failed", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Collections.singletonMap("error", "Google authentication failed: " + e.getMessage()));
         }
+    }
+
+    private String exchangeCodeForIdToken(String code) {
+        String tokenEndpoint = "https://oauth2.googleapis.com/token";
+
+        LinkedMultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("code", code);
+        params.add("client_id", clientId);
+        params.add("client_secret", clientSecret);
+        params.add("redirect_uri", redirectUri);
+        params.add("grant_type", "authorization_code");
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        HttpEntity<LinkedMultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
+
+        try {
+            ResponseEntity<Map> tokenResponse = restTemplate.postForEntity(tokenEndpoint, request, Map.class);
+            if (tokenResponse.getBody() == null || !tokenResponse.getBody().containsKey("id_token")) {
+                log.error("Google token response missing id_token: {}", tokenResponse.getBody());
+                return null;
+            }
+            return (String) tokenResponse.getBody().get("id_token");
+        } catch (Exception e) {
+            log.error("Failed to exchange authorization code for id_token", e);
+            return null;
+        }
+    }
+
+    private String getEmailFromIdToken(String idToken) {
+        String userInfoUrl = "https://oauth2.googleapis.com/tokeninfo?id_token=" + idToken;
+        try {
+            ResponseEntity<Map> userInfoResponse = restTemplate.getForEntity(userInfoUrl, Map.class);
+            if (userInfoResponse.getStatusCode() == HttpStatus.OK && userInfoResponse.getBody() != null) {
+                return (String) userInfoResponse.getBody().get("email");
+            }
+        } catch (Exception e) {
+            log.error("Failed to get user info from Google tokeninfo", e);
+        }
+        return null;
+    }
+
+    private void createOrUpdateGoogleUser(String email) {
+        userRepository.findByEmail(email).orElseGet(() -> {
+            User newUser = new User();
+            newUser.setEmail(email);
+            newUser.setUserName(email);
+            newUser.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
+            newUser.setRoles(List.of("USER"));
+            userRepository.save(newUser);
+            return newUser;
+        });
     }
 }
