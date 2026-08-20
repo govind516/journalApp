@@ -1,148 +1,368 @@
-# Journal App
+# JournalApp
 
-The Journal App is a secure, high-performance application that manages journal entries. It offers features for users to create, update, delete, and view journal entries while integrating OAuth 2.0 login for secure authentication. The app also supports caching and messaging via Redis and Kafka, respectively, to enhance performance and scalability. The app also includes features like sentiment analysis on journal content, email notifications, and API integrations for quotes and weather.
+A secure journal application with **end-to-end encryption (E2EE)**, where the server never sees your journal plaintext.
 
-![image](https://github.com/user-attachments/assets/1e131ff5-ced9-4e36-ab1f-011ad82eaf44)
+Built with Spring Boot 3.4 + React 19 + Vite 8 + MongoDB + Redis + Kafka.
 
-## Features
+## Architecture
 
-- **User Authentication**: Secure login and role-based access (Admin/User) using JWT and Google OAuth 2.0
-- **Journal Entry Management**: Users can create, update, delete, and view their journal entries.
-- **Sentiment Analysis**: Analyzes the sentiment of journal entries using predefined sentiment values (HAPPY, SAD, ANGRY, ANXIOUS).
-- **Email Notifications**: Sends email alerts based on the user's sentiment data or other triggers.
-- **Redis Caching**: Utilizes Redis to cache data like API keys for faster access.
-- **API Integrations**: Integrates with external APIs for quotes and weather information.
-- **Scheduled Tasks**: Sends weekly sentiment summaries to users via Kafka or email.
+```
+                    ┌───────────────────┐
+                    │   React / Vite     │
+                    │   Frontend :3000   │
+                    │                    │
+                    │  ┌──────────────┐  │
+                    │  │ AES-256-GCM  │  │  <-- encryption happens here
+                    │  │ PBKDF2 KDF   │  │
+                    │  └──────────────┘  │
+                    └─────────┬─────────┘
+                              │
+                    Google OAuth / HTTPS
+                              │
+                    ┌─────────▼─────────┐
+                    │   Spring Boot      │
+                    │   Backend :8080    │
+                    └───┬─────┬─────┬───┘
+                        │     │     │
+               ┌────────▼┐ ┌──▼──┐ ┌▼─────────┐
+               │ MongoDB │ │Redis│ │  Kafka    │
+               │ Atlas   │ │     │ │  Aiven    │
+               └─────────┘ │Upstash│ └────┬─────┘
+                           │     │      │
+                        Sentiment     Sentiment
+                        Consumer      Scheduler
+                           │          (weekly)
+                           ▼            │
+                        Resend          ▼
+                        (email)      Resend
+```
+
+**What the server sees:**
+```
+{
+  "id": "abc123",
+  "userName": "alice",
+  "title": "xbG3kQ==:9f2c1a...",      <-- ciphertext
+  "content": "mN4pR==:k8w2x1...",     <-- ciphertext
+  "sentiment": "HAPPY",               <-- label only
+  "date": "2026-08-20T10:30:00"       <-- plaintext (metadata)
+}
+```
+
+**What the server never sees:** Your journal title or content in plaintext.
 
 ## Tech Stack
 
-- **Backend**: Spring Boot (Java)
-- **Database**: MongoDB
-- **Cache**: Redis
-- **Message Broker**: Kafka
-- **Authentication**: JWT (JSON Web Token) and Google OAuth 2.0 with Spring Security
-- **Testing**: JUnit, Mockito
-- **Scheduler**: Spring Scheduling
-- **Email Service**: JavaMailSender
-- **API documentation**: Swagger
+| Layer | Technology |
+|-------|-----------|
+| Frontend | React 19, Vite 8, react-router-dom, axios |
+| Backend | Spring Boot 3.4.0, Java 17 |
+| Database | MongoDB (Atlas) |
+| Cache | Redis (Upstash) |
+| Messaging | Kafka (Aiven) |
+| Auth | JWT + Google OAuth 2.0 (Spring Security) |
+| E2EE | AES-256-GCM, PBKDF2 (100k iterations), SHA-256 |
+| Email | Resend / Gmail SMTP |
+| API Docs | SpringDoc OpenAPI (Swagger UI) |
+| Testing | Node.js test runner, bash API tests |
 
-## Requirements
+## Local Development
 
-- JDK 17 or higher
+### Prerequisites
+
+- JDK 17+
 - Maven 3.x
-- MongoDB
-- Redis (For caching)
-- Kafka (For message streaming)
-- Spring Boot 2.x or later
+- Node.js 18+
+- MongoDB (local or Atlas)
+- Redis (optional, Upstash)
+- Kafka (optional, Aiven)
 
-## Installation
+### 1. Clone & configure
 
-1. **Clone the repository**:
+```bash
+git clone https://github.com/govind516/journalApp.git
+cd journalApp
+```
 
-   ```bash
-   git clone https://github.com/govind516/journalApp.git
-   cd journalApp
-   ```
+### 2. Create `.env` in project root
 
-2. **API Integrations**:
+```env
+MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/journalApp
+MONGODB_DATABASE=journalApp
+REDIS_URL=rediss://...                          # optional
+KAFKA_BOOTSTRAP_SERVERS=penguin-01.sasl...:9092  # optional
+KAFKA_SASL_JAAS_CONFIG=org.apache.kafka...       # optional
+KAFKA_CLIENT_ID=journal-app
+GOOGLE_CLIENT_ID=your-client-id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=GOCSPX-...
+GOOGLE_REDIRECT_URI=http://localhost:3000/auth/google/callback
+MAIL_USERNAME=your@email.com
+MAIL_PASSWORD=your-app-password
+JWT_SECRET=generate-with-openssl-rand-hex-32
+WEATHER_API_KEY=your-key
+QUOTE_API_KEY=your-key
+CORS_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173
+```
 
-   - Sign up at WeatherStack and API Ninjas to get API keys.
-   - **Weather API**: Fetch weather data based on the user's location.
-   - **Quote API**: Get inspirational quotes for the user.
-   
-3. **Set up MongoDB, Redis and Kafka (optional)**:
-   - Set up an account on MongoDB Atlas and Redis Cloud.
-   - Install and run Kafka locally or use a cloud-based service.
-   - Ensure Both Redis and MongoDB are running with your whitelisted IP.
+### 3. Start backend
 
-   ```bash
-   spring:
-     data:
-       mongodb:
-         uri=${MONGODB_URI}
-         database: ${MONGODB_DATABASE}
-     redis:
-       url: ${REDIS_URL}
-     kafka:
-       bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
-       properties:
-         sasl.jaas.config: ${KAFKA_SASL_JAAS_CONFIG}
-         sasl.mechanism: PLAIN
-         security.protocol: SASL_SSL
-         session.timeout.ms: 45000
-         client.id: ${KAFKA_CLIENT_ID}
-   ```
-     
-4. **Setup Google OAuth 2.0 for Authentication**:
+```bash
+mvn spring-boot:run
+```
 
-   - Go to the Google Developer Console.
-   - Create a new project or use an existing one.
-   - Enable the Google OAuth 2.0 API.
-   - Create OAuth 2.0 credentials (Client ID and Client Secret).
-   - Add the client ID and secret to application-dev.yml
+Backend runs at `http://localhost:8080`. Swagger at `http://localhost:8080/swagger-ui/index.html`.
 
-   ```bash
-   security:
-    oauth2:
-      client:
-        registration:
-          google:
-            client-id: ${GOOGLE_CLIENT_ID}
-            client-secret: ${GOOGLE_CLIENT_SECRET}
-   ```
-    
-5. **Create a .env file in the root directory and configure the following**:
+### 4. Start frontend
 
-   - MongoDB Atlas: Set up your MongoDB Atlas connection string and credentials.
-   - Redis Cloud: Set up your Redis Cloud credentials.
-   - Kafka Cloud: Set up your Kafka Cloud credentials.
-   - Google OAuth 2.0: Add the necessary Google OAuth credentials.
+```bash
+cd client
+npm install
+npm run dev
+```
 
-   ```bash
-   MONGODB_URI=your_mongodb_connection_string
-   REDIS_URI=your_redis_connection_string
-   KAFKA_BROKER=your_kafka_broker_url
-   GOOGLE_CLIENT_ID=your_google_client_id
-   GOOGLE_CLIENT_SECRET=your_google_client_secret
-   ```
+Frontend runs at `http://localhost:3000` (proxied to backend).
 
-6. **Run and Access the application**:
+### 5. Run tests
 
-   If you're using Maven:
+```bash
+# Unit tests (crypto + sentiment)
+cd client && node --experimental-vm-modules src/utils/__tests__/crypto.test.js
+cd client && node --experimental-vm-modules src/utils/__tests__/sentiment.test.js
 
-   ```bash
-   mvn spring-boot:run
-   ```
-   
-   - Open your browser and visit `http://localhost:8080`.
-   - Alternatively, visit Swagger UI at `http://localhost:8080/swagger-ui/index.html`.
-   - You can now start creating and managing journal entries.
+# API integration tests (requires running backend)
+bash test-api.sh
+```
 
-     
-## Usage
+## Cloud Deployment (Render)
 
-### Authentication
+### Backend
 
-- Users can register by providing their username and password.
-- Admins can access broader functionalities (e.g., viewing all users’ entries).
+1. Push to GitHub
+2. Create Web Service on Render
+3. Build command: `mvn clean package -DskipTests`
+4. Start command: `bash start.jar.sh`
+5. Add all `.env` variables as Render environment variables
 
-### Journal Entries
+### Frontend
 
-- Create new Journal Entries corresponding to users and then verify them.
+Deploy the `client/` directory as a separate Static Site on Render (or any static host):
+```bash
+cd client && npm run build
+# Upload client/dist/ to static host
+```
 
-### Sentiment Analysis
+Set `VITE_API_URL=https://your-backend.onrender.com` in the frontend's environment.
 
-- Every journal entry is analyzed for sentiment based on predefined rules.
-- Weekly sentiment summaries are sent to users via Kafka or email.
+## Authentication
 
-## Scheduled Tasks
+### JWT Flow
 
-- Weekly, a scheduled task runs to analyze user sentiments for the last 7 days and sends an email or Kafka message.
+```
+POST /public/signUp  -->  creates account (password BCrypt-hashed)
+POST /public/login   -->  returns JWT token
+GET  /journal        -->  Authorization: Bearer <token>
+```
 
-## Contributing
+### Google OAuth Flow
 
-Feel free to fork out this project and submit pull requests. Please ensure your contributions follow the project's coding style and that tests are included for new features.
+```
+Browser  -->  Google consent screen
+Google   -->  redirects to /auth/google/callback?code=...
+Backend  -->  exchanges code for id_token
+Backend  -->  finds/creates user, returns JWT
+Browser  -->  stores JWT, redirects to dashboard
+```
+
+Configure Google Cloud Console redirect URIs:
+- `http://localhost:3000/auth/google/callback` (dev)
+- `https://your-domain.com/auth/google/callback` (prod)
+
+### Roles
+
+| Role | Access |
+|------|--------|
+| USER | `/user/**`, `/journal/**` |
+| ADMIN | `/admin/**` + all USER routes |
+
+## End-to-End Encryption (E2EE)
+
+### Design
+
+```
+User password
+    │
+    ▼  PBKDF2 (100k iterations, SHA-256)
+Encryption key (AES-256)
+    │
+    ▼  AES-256-GCM (random IV per entry)
+Ciphertext
+    │
+    ▼
+Server stores: iv:ciphertext
+```
+
+### Key Derivation
+
+- **Salt**: Derived deterministically from username via SHA-256 (not stored)
+- **KDF**: PBKDF2 with 100,000 iterations
+- **Cipher**: AES-256-GCM (authenticated encryption)
+- **IV**: Random 12 bytes per encryption (same plaintext → different ciphertext)
+
+### What's Encrypted
+
+| Data | Encrypted? | Why |
+|------|-----------|-----|
+| Journal title | ✅ | May contain sensitive info |
+| Journal content | ✅ | Core privacy |
+| Sentiment | ❌ | Computed client-side, label only |
+| Date | ❌ | UI metadata |
+| User email/ID | ❌ | Auth infrastructure |
+
+### Flow
+
+1. User enters password → cached in browser memory
+2. Create entry: plaintext → encrypt → ciphertext sent to server
+3. Read entry: ciphertext fetched → decrypted locally → plaintext shown
+4. Logout: password cleared from memory
+
+### Security Properties
+
+- Server never sees journal plaintext
+- Random IV per encryption (semantic security)
+- PBKDF2 with 100k iterations (brute-force resistant)
+- AES-GCM provides confidentiality + integrity
+- Wrong password/key → decryption fails with error
+- Password cleared from memory on logout
+
+## Sentiment Analysis
+
+Sentiment is computed **client-side** (browser) to preserve E2EE:
+
+```
+Browser: plaintext → analyzeSentiment() → HAPPY
+Server: stores { sentiment: "HAPPY", title: "ciphertext..." }
+```
+
+Categories: `HAPPY`, `SAD`, `ANGRY`, `ANXIOUS`, `NEUTRAL`
+
+Keyword-based analyzer with 400+ words across 4 categories. Runs on every keystroke for live mood preview.
+
+## Redis Usage
+
+- Caches external API responses (weather, quotes)
+- `AppCache` loads config from MongoDB on startup
+- TTL-based cache invalidation
+- Falls back to direct API calls on cache miss
+
+## Kafka Usage
+
+- **Producer**: Sentiment scheduler produces to `weekly-sentiments` topic
+- **Consumer**: `SentimentConsumerService` consumes and sends email
+- **Scheduler**: `UserScheduler` runs weekly (Sunday 9 AM) to aggregate sentiments
+- **Fallback**: If Kafka unavailable, sends email directly
+
+## Database Design
+
+### `users` collection
+
+```json
+{
+  "_id": ObjectId,
+  "userName": "alice",              // unique, indexed
+  "email": "alice@example.com",
+  "password": "$2a$10$...",         // BCrypt-hashed
+  "sentimentAnalysis": false,
+  "roles": ["USER"]
+}
+```
+
+### `journalEntries` collection
+
+```json
+{
+  "_id": ObjectId,
+  "title": "xbG3kQ==:9f2c1a...",   // encrypted
+  "content": "mN4pR==:k8w2x1...",  // encrypted
+  "date": "2026-08-20T10:30:00",
+  "sentiment": "HAPPY",            // client-computed label
+  "userName": "alice"               // indexed, ownership
+}
+```
+
+### `configJournalApp` collection
+
+```json
+{
+  "key": "weather_api_key",
+  "value": "..."
+}
+```
+
+## Environment Variables
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `MONGODB_URI` | ✅ | MongoDB Atlas connection string |
+| `MONGODB_DATABASE` | ✅ | Database name |
+| `REDIS_URL` | ❌ | Upstash Redis URL |
+| `KAFKA_BOOTSTRAP_SERVERS` | ❌ | Aiven Kafka broker |
+| `KAFKA_SASL_JAAS_CONFIG` | ❌ | Kafka SASL config |
+| `KAFKA_CLIENT_ID` | ❌ | Kafka client ID |
+| `GOOGLE_CLIENT_ID` | ✅ | Google OAuth client ID |
+| `GOOGLE_CLIENT_SECRET` | ✅ | Google OAuth client secret |
+| `GOOGLE_REDIRECT_URI` | ❌ | OAuth redirect (default: localhost:3000) |
+| `MAIL_USERNAME` | ✅ | SMTP username |
+| `MAIL_PASSWORD` | ✅ | SMTP password |
+| `JWT_SECRET` | ✅ | JWT signing key (use `openssl rand -hex 32`) |
+| `WEATHER_API_KEY` | ✅ | WeatherStack API key |
+| `QUOTE_API_KEY` | ✅ | API Ninjas quotes key |
+| `CORS_ALLOWED_ORIGINS` | ❌ | Comma-separated origins (default: localhost) |
+| `VITE_API_URL` | ❌ | Frontend API URL (default: localhost:8080) |
+| `VITE_GOOGLE_CLIENT_ID` | ❌ | Frontend Google client ID |
+
+## Security Model
+
+| Layer | Protection |
+|-------|-----------|
+| Transport | HTTPS (Render provides TLS) |
+| Authentication | JWT tokens with 30-min expiry |
+| Passwords | BCrypt hashing (10 rounds) |
+| Authorization | Role-based (USER/ADMIN) via Spring Security |
+| CORS | Configurable allowed origins |
+| Rate Limiting | 10 login attempts/IP/minute |
+| Headers | X-Frame-Options: DENY, HSTS, nosniff |
+| CSRF | Disabled (stateless JWT) |
+| E2EE | AES-256-GCM, PBKDF2 100k iterations |
+| Logs | No plaintext journal content in logs |
+
+## API Endpoints
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| GET | `/public/health-check` | - | Health check |
+| POST | `/public/signUp` | - | Create account |
+| POST | `/public/login` | - | Login, returns JWT |
+| GET | `/auth/google/callback` | - | Google OAuth callback |
+| GET | `/user` | USER | Get greeting (weather + quote) |
+| PUT | `/user` | USER | Update user |
+| DELETE | `/user` | USER | Delete user |
+| GET | `/journal` | USER | List user's entries |
+| POST | `/journal` | USER | Create entry |
+| GET | `/journal/id/{id}` | USER | Get entry by ID |
+| PUT | `/journal/id/{id}` | USER | Update entry |
+| DELETE | `/journal/id/{id}` | USER | Delete entry |
+| GET | `/admin/all-users` | ADMIN | List all users |
+| POST | `/admin/create-admin` | ADMIN | Create admin user |
+| GET | `/admin/clear-app-cache` | ADMIN | Clear Redis cache |
+
+## Known Limitations
+
+- **Container sleep**: Render free tier sleeps after 15 min inactivity (5-10s cold start)
+- **No Kafka on Render free**: Sentiment scheduler doesn't run; email fallback works
+- **No export/import**: E2EE export/import of encrypted entries not yet implemented
+- **Google login E2EE**: Google-authenticated users don't have a password for key derivation; need separate encryption passphrase
+- **Sentiment accuracy**: Keyword-based; not as accurate as ML-based approaches
 
 ## License
 
-Distributed under the MIT License. See `LICENSE` for more information.
+MIT
