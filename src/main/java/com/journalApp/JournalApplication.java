@@ -16,13 +16,17 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 public class JournalApplication {
 
 	public static void main(String[] args) {
-		Dotenv dotenv = Dotenv.configure()
-				.directory("./")
-				.filename(".env")
-				.load();
-		dotenv.entries().forEach(entry ->
-				System.setProperty(entry.getKey(), entry.getValue())
-		);
+		try {
+			Dotenv dotenv = Dotenv.configure()
+					.directory("./")
+					.filename(".env")
+					.load();
+			dotenv.entries().forEach(entry ->
+					System.setProperty(entry.getKey(), entry.getValue())
+			);
+		} catch (Exception e) {
+			// .env file not found — using environment variables (e.g. Render, Docker)
+		}
 		SpringApplication.run(JournalApplication.class, args);
 	}
 
