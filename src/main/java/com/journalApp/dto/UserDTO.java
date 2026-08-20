@@ -5,8 +5,6 @@ import org.springframework.data.mongodb.core.index.Indexed;
 
 public class UserDTO {
 
-    private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(UserDTO.class.getName());
-
     public UserDTO() {
     }
 

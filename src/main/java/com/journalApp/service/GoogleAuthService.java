@@ -11,7 +11,6 @@ import org.springframework.http.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Collections;
@@ -88,12 +87,13 @@ public class GoogleAuthService {
         HttpEntity<LinkedMultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
 
         try {
-            ResponseEntity<Map> tokenResponse = restTemplate.postForEntity(tokenEndpoint, request, Map.class);
-            if (tokenResponse.getBody() == null || !tokenResponse.getBody().containsKey("id_token")) {
-                log.error("Google token response missing id_token: {}", tokenResponse.getBody());
+            @SuppressWarnings("unchecked")
+            Map<String, Object> body = restTemplate.postForEntity(tokenEndpoint, request, Map.class).getBody();
+            if (body == null || !body.containsKey("id_token")) {
+                log.error("Google token response missing id_token: {}", body);
                 return null;
             }
-            return (String) tokenResponse.getBody().get("id_token");
+            return (String) body.get("id_token");
         } catch (Exception e) {
             log.error("Failed to exchange authorization code for id_token", e);
             return null;
@@ -103,9 +103,10 @@ public class GoogleAuthService {
     private String getEmailFromIdToken(String idToken) {
         String userInfoUrl = "https://oauth2.googleapis.com/tokeninfo?id_token=" + idToken;
         try {
-            ResponseEntity<Map> userInfoResponse = restTemplate.getForEntity(userInfoUrl, Map.class);
-            if (userInfoResponse.getStatusCode() == HttpStatus.OK && userInfoResponse.getBody() != null) {
-                return (String) userInfoResponse.getBody().get("email");
+            @SuppressWarnings("unchecked")
+            Map<String, Object> body = restTemplate.getForEntity(userInfoUrl, Map.class).getBody();
+            if (body != null) {
+                return (String) body.get("email");
             }
         } catch (Exception e) {
             log.error("Failed to get user info from Google tokeninfo", e);

@@ -3,8 +3,6 @@ package com.journalApp.service;
 import com.journalApp.entity.JournalEntry;
 import com.journalApp.repository.JournalEntryRepository;
 import org.bson.types.ObjectId;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,8 +11,6 @@ import java.util.Optional;
 
 @Service
 public class JournalEntryService {
-
-    private static final Logger log = LoggerFactory.getLogger(JournalEntryService.class);
 
     @Autowired
     private JournalEntryRepository journalEntryRepository;

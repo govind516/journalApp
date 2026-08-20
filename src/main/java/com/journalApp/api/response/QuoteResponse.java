@@ -2,8 +2,6 @@ package com.journalApp.api.response;
 
 public class QuoteResponse {
 
-    private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(QuoteResponse.class.getName());
-
     public String quote;
 
     public QuoteResponse() {

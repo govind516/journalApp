@@ -4,8 +4,6 @@ import java.util.List;
 
 public class WeatherResponse {
 
-    private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(WeatherResponse.class.getName());
-
     private Current current;
 
     public Current getCurrent() {
