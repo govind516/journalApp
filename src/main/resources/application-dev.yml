@@ -1,6 +1,4 @@
 spring:
-  config:
-    import: optional:file:.env
   application:
     name: Journal App
   data:
