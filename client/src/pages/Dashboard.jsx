@@ -53,16 +53,16 @@ export default function Dashboard() {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Delete this journal entry?')) return;
+    if (!window.confirm('Delete this entry?')) return;
     try {
       await journalAPI.delete(id);
       setEntries((prev) => prev.filter((e) => e.id !== id));
     } catch {
-      setError('Failed to delete entry');
+      setError('Failed to delete');
     }
   };
 
-  if (loading) return <div className="loading">Loading your journals...</div>;
+  if (loading) return <div className="loading">Loading...</div>;
 
   return (
     <div className="dashboard">
@@ -74,33 +74,21 @@ export default function Dashboard() {
       {error && <div className="alert alert-error">{error}</div>}
       {!password && entries.length > 0 && (
         <div className="alert alert-info">
-          Journal entries are end-to-end encrypted. Log in with a password to decrypt them.
+          Entries are encrypted. Log in with a password to decrypt.
         </div>
       )}
       <div className="dashboard-header">
-        <h2>My Journal</h2>
-        <button className="btn btn-primary" onClick={() => navigate('/journal/new')}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-            <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-          </svg>
-          New Entry
+        <h2>Journal</h2>
+        <button className="btn btn-primary btn-sm" onClick={() => navigate('/journal/new')}>
+          + New
         </button>
       </div>
       {entries.length === 0 ? (
         <div className="empty-state">
-          <div className="empty-state-icon">
-            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-              <polyline points="14 2 14 8 20 8" />
-              <line x1="16" y1="13" x2="8" y2="13" />
-              <line x1="16" y1="17" x2="8" y2="17" />
-              <polyline points="10 9 9 9 8 9" />
-            </svg>
-          </div>
-          <h3>No journal entries yet</h3>
-          <p>Start writing to capture your thoughts and track your mood over time.</p>
-          <button className="btn btn-primary" onClick={() => navigate('/journal/new')}>
-            Create Your First Entry
+          <h3>Nothing here yet</h3>
+          <p>Write your first entry.</p>
+          <button className="btn btn-primary btn-sm" onClick={() => navigate('/journal/new')}>
+            + New Entry
           </button>
         </div>
       ) : (
@@ -112,9 +100,7 @@ export default function Dashboard() {
                   <Link to={`/journal/${entry.id}`}>{entry.title}</Link>
                 </h3>
                 {entry.sentiment && (
-                  <span className={`sentiment sentiment-${entry.sentiment.toLowerCase()}`}>
-                    {entry.sentiment}
-                  </span>
+                  <span className="sentiment">{entry.sentiment}</span>
                 )}
               </div>
               <p className="entry-date">
@@ -126,8 +112,7 @@ export default function Dashboard() {
                 {entry.content?.substring(0, 200)}{entry.content?.length > 200 ? '...' : ''}
               </p>
               <div className="entry-actions">
-                <Link to={`/journal/${entry.id}`} className="btn btn-sm btn-primary">View</Link>
-                <Link to={`/journal/${entry.id}`} className="btn btn-sm btn-outline">Edit</Link>
+                <Link to={`/journal/${entry.id}`} className="btn btn-sm">Open</Link>
                 <button className="btn btn-sm btn-danger" onClick={() => handleDelete(entry.id)}>
                   Delete
                 </button>

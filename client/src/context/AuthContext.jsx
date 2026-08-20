@@ -3,11 +3,13 @@ import { authAPI } from '../api/api';
 
 const AuthContext = createContext(null);
 
+const PASSWORD_KEY = 'e2ee_password';
+
 export function AuthProvider({ children }) {
   const [token, setToken] = useState(localStorage.getItem('token'));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [password, setPassword] = useState(null);
+  const [password, setPassword] = useState(() => sessionStorage.getItem(PASSWORD_KEY));
 
   const login = useCallback(async (userName, pwd) => {
     setLoading(true);
@@ -15,6 +17,7 @@ export function AuthProvider({ children }) {
     try {
       const res = await authAPI.login({ userName, password: pwd });
       localStorage.setItem('token', res.data);
+      sessionStorage.setItem(PASSWORD_KEY, pwd);
       setToken(res.data);
       setPassword(pwd);
       return true;
@@ -45,9 +48,9 @@ export function AuthProvider({ children }) {
     setError(null);
     try {
       const res = await authAPI.googleCallback(code);
-      const token = res.data.token || res.data;
-      localStorage.setItem('token', token);
-      setToken(token);
+      const tkn = res.data.token || res.data;
+      localStorage.setItem('token', tkn);
+      setToken(tkn);
       return true;
     } catch (err) {
       setError(err.response?.data || 'Google login failed');
@@ -61,6 +64,7 @@ export function AuthProvider({ children }) {
     setToken(null);
     setPassword(null);
     localStorage.removeItem('token');
+    sessionStorage.removeItem(PASSWORD_KEY);
   }, []);
 
   const isAdmin = useCallback(() => {

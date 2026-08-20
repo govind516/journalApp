@@ -48,22 +48,22 @@ export default function Admin() {
     }
   };
 
-  if (loading) return <div className="loading">Loading users...</div>;
+  if (loading) return <div className="loading">Loading...</div>;
 
   return (
     <div className="admin-page">
-      <h2>Admin Dashboard</h2>
+      <h2>Admin</h2>
       {error && <div className="alert alert-error">{error}</div>}
 
       <div className="admin-section">
-        <h3>All Users ({users.length})</h3>
+        <h3>Users ({users.length})</h3>
         <table className="table">
           <thead>
             <tr>
               <th>Username</th>
               <th>Email</th>
               <th>Roles</th>
-              <th>Journal Entries</th>
+              <th>Entries</th>
             </tr>
           </thead>
           <tbody>
@@ -80,7 +80,7 @@ export default function Admin() {
       </div>
 
       <div className="admin-section">
-        <h3>Create Admin User</h3>
+        <h3>Create Admin</h3>
         <form onSubmit={handleCreateAdmin} className="admin-form">
           <input
             type="text"
@@ -102,15 +102,15 @@ export default function Admin() {
             onChange={(e) => setNewAdmin({ ...newAdmin, password: e.target.value })}
             required
           />
-          <button type="submit" className="btn btn-primary" disabled={creating}>
-            {creating ? 'Creating...' : 'Create Admin'}
+          <button type="submit" className="btn btn-primary btn-sm" disabled={creating}>
+            {creating ? 'Creating...' : 'Create'}
           </button>
         </form>
       </div>
 
       <div className="admin-section">
-        <button className="btn btn-outline" onClick={handleClearCache}>
-          Clear App Cache
+        <button className="btn btn-outline btn-sm" onClick={handleClearCache}>
+          Clear Cache
         </button>
       </div>
     </div>

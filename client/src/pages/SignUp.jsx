@@ -32,7 +32,7 @@ export default function SignUp() {
     <div className="auth-page">
       <div className="auth-card">
         <h2>Create account</h2>
-        <p className="subtitle">Start journaling your thoughts</p>
+        <p className="subtitle">Start writing</p>
         {displayError && <div className="alert alert-error">{displayError}</div>}
         <form onSubmit={handleSubmit}>
           <div className="form-group">
@@ -42,7 +42,7 @@ export default function SignUp() {
               value={userName}
               onChange={(e) => setUserName(e.target.value)}
               required
-              placeholder="Choose a username"
+              placeholder="choose a username"
               autoFocus
             />
           </div>
@@ -62,7 +62,7 @@ export default function SignUp() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              placeholder="At least 6 characters"
+              placeholder="at least 6 characters"
             />
           </div>
           <div className="form-group">
@@ -72,11 +72,11 @@ export default function SignUp() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
-              placeholder="Repeat your password"
+              placeholder="repeat password"
             />
           </div>
           <button type="submit" className="btn btn-primary" disabled={loading} style={{ width: '100%' }}>
-            {loading ? 'Creating account...' : 'Create Account'}
+            {loading ? 'Creating...' : 'Create Account'}
           </button>
         </form>
         <p className="auth-footer">

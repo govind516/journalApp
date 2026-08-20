@@ -13,7 +13,7 @@ export default function Layout() {
   return (
     <div className="app">
       <nav className="navbar">
-        <Link to="/" className="nav-brand">JournalApp</Link>
+        <Link to="/" className="nav-brand">Journal</Link>
         <div className="nav-links">
           {token ? (
             <>

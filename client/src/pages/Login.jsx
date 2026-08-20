@@ -20,7 +20,7 @@ export default function Login() {
 
   const handleGoogleLogin = () => {
     if (!GOOGLE_CLIENT_ID) {
-      setError('Google Sign-In is not configured. Set VITE_GOOGLE_CLIENT_ID in client/.env');
+      setError('Google Sign-In is not configured.');
       return;
     }
     setGoogleLoading(true);
@@ -43,8 +43,8 @@ export default function Login() {
   return (
     <div className="auth-page">
       <div className="auth-card">
-        <h2>Welcome back</h2>
-        <p className="subtitle">Sign in to your journal</p>
+        <h2>Log in</h2>
+        <p className="subtitle">Welcome back to your journal</p>
         {error && <div className="alert alert-error">{error}</div>}
         <form onSubmit={handleSubmit}>
           <div className="form-group">
@@ -54,7 +54,7 @@ export default function Login() {
               value={userName}
               onChange={(e) => setUserName(e.target.value)}
               required
-              placeholder="Enter your username"
+              placeholder="username"
               autoFocus
             />
           </div>
@@ -65,7 +65,7 @@ export default function Login() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              placeholder="Enter your password"
+              placeholder="password"
             />
           </div>
           <button type="submit" className="btn btn-primary" disabled={loading} style={{ width: '100%' }}>
@@ -79,10 +79,10 @@ export default function Login() {
           disabled={googleLoading}
         >
           {googleLoading ? (
-            <span className="google-loading">Redirecting to Google...</span>
+            <span className="google-loading">Redirecting...</span>
           ) : (
             <>
-              <svg width="18" height="18" viewBox="0 0 18 18">
+              <svg width="16" height="16" viewBox="0 0 18 18">
                 <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 0 1-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615Z"/>
                 <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18Z"/>
                 <path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332Z"/>

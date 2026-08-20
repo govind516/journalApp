@@ -44,7 +44,7 @@ export default function JournalEntryPage() {
         setDecrypted(true);
       }
     } catch {
-      setError('Entry not found');
+      setError('Not found');
     } finally {
       setLoading(false);
     }
@@ -52,14 +52,12 @@ export default function JournalEntryPage() {
 
   const handleContentChange = (value) => {
     setContent(value);
-    const combined = (title || '') + '\n' + (value || '');
-    setSentiment(analyzeSentiment(combined));
+    setSentiment(analyzeSentiment((title || '') + '\n' + (value || '')));
   };
 
   const handleTitleChange = (value) => {
     setTitle(value);
-    const combined = (value || '') + '\n' + (content || '');
-    setSentiment(analyzeSentiment(combined));
+    setSentiment(analyzeSentiment((value || '') + '\n' + (content || '')));
   };
 
   const handleSubmit = async (e) => {
@@ -76,18 +74,13 @@ export default function JournalEntryPage() {
         sendContent = content ? await encrypt(content, password, getUserName()) : '';
       }
 
-      const payload = {
-        title: sendTitle,
-        content: sendContent,
-        sentiment: computedSentiment,
-      };
+      const payload = { title: sendTitle, content: sendContent, sentiment: computedSentiment };
 
       if (isNew) {
         const res = await journalAPI.create(payload);
         navigate(`/journal/${res.data.id}`);
       } else {
-        const res = await journalAPI.update(id, payload);
-        setEntry(res.data);
+        await journalAPI.update(id, payload);
         navigate(`/journal/${id}`);
       }
     } catch (err) {
@@ -97,34 +90,26 @@ export default function JournalEntryPage() {
     }
   };
 
-  if (loading) return <div className="loading">Loading entry...</div>;
+  if (loading) return <div className="loading">Loading...</div>;
 
   const sentimentLabel = sentiment || 'NEUTRAL';
 
   return (
     <div className="journal-entry-page">
       <button className="btn-back" onClick={() => navigate(-1)}>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" />
-        </svg>
-        Back
+        &larr; Back
       </button>
-      <h2>{isNew ? 'New Journal Entry' : 'Edit Entry'}</h2>
+      <h2>{isNew ? 'New Entry' : 'Edit'}</h2>
       {error && <div className="alert alert-error">{error}</div>}
       {!password && !isNew && (
         <div className="alert alert-info">
-          E2EE is active. Log in with a password (not Google) to decrypt entries.
+          Encrypted. Log in with a password to decrypt.
         </div>
       )}
       {!isNew && entry && (
         <p className="entry-meta">
-          Created: {new Date(entry.date).toLocaleString()}
-          {isEncrypted(entry.title) && (
-            <>
-              <span style={{ color: 'var(--text-muted)' }}>|</span>
-              <span style={{ color: 'var(--primary)' }}>Encrypted</span>
-            </>
-          )}
+          {new Date(entry.date).toLocaleString()}
+          {isEncrypted(entry.title) && ' · encrypted'}
         </p>
       )}
       <form onSubmit={handleSubmit} className="entry-form">
@@ -135,7 +120,7 @@ export default function JournalEntryPage() {
             value={title}
             onChange={(e) => handleTitleChange(e.target.value)}
             required
-            placeholder={decrypted ? "What's on your mind?" : 'Decrypting...'}
+            placeholder={decrypted ? 'Title' : 'Decrypting...'}
             autoFocus
           />
         </div>
@@ -144,21 +129,18 @@ export default function JournalEntryPage() {
           <textarea
             value={content}
             onChange={(e) => handleContentChange(e.target.value)}
-            placeholder={decrypted ? 'Write your thoughts here...' : 'Decrypting...'}
+            placeholder={decrypted ? 'Write...' : 'Decrypting...'}
             rows={12}
           />
         </div>
         {sentimentLabel && (
           <div className="sentiment-preview">
-            Detected mood:{' '}
-            <span className={`sentiment sentiment-${sentimentLabel.toLowerCase()}`}>
-              {sentimentLabel}
-            </span>
+            <span className="sentiment">{sentimentLabel}</span>
           </div>
         )}
         <div className="form-actions">
           <button type="submit" className="btn btn-primary" disabled={saving || !decrypted}>
-            {saving ? 'Saving...' : isNew ? 'Create Entry' : 'Save Changes'}
+            {saving ? 'Saving...' : isNew ? 'Create' : 'Save'}
           </button>
           <button type="button" className="btn btn-outline" onClick={() => navigate(-1)}>
             Cancel

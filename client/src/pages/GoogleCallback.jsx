@@ -16,20 +16,20 @@ export default function GoogleCallback() {
 
     if (error) {
       setStatus('error');
-      setErrorMsg(searchParams.get('error_description') || 'Google sign-in was cancelled or failed');
+      setErrorMsg(searchParams.get('error_description') || 'Google sign-in was cancelled');
       return;
     }
 
     if (!code) {
       setStatus('error');
-      setErrorMsg('No authorization code received from Google');
+      setErrorMsg('No authorization code received');
       return;
     }
 
     const savedState = sessionStorage.getItem('oauth_state');
     if (savedState && state !== savedState) {
       setStatus('error');
-      setErrorMsg('Invalid state parameter — possible CSRF attack');
+      setErrorMsg('Invalid state parameter');
       return;
     }
     sessionStorage.removeItem('oauth_state');
@@ -37,10 +37,10 @@ export default function GoogleCallback() {
     googleLogin(code).then((ok) => {
       if (ok) {
         setStatus('success');
-        setTimeout(() => navigate('/', { replace: true }), 1000);
+        setTimeout(() => navigate('/', { replace: true }), 800);
       } else {
         setStatus('error');
-        setErrorMsg('Failed to authenticate with Google. The account may not exist or the code expired.');
+        setErrorMsg('Authentication failed. Please try again.');
       }
     });
   }, [searchParams]);
@@ -50,12 +50,8 @@ export default function GoogleCallback() {
       <div className="auth-page">
         <div className="auth-card">
           <div className="google-status-success">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--success)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
-              <polyline points="22 4 12 14.01 9 11.01" />
-            </svg>
-            <h3>Signed in successfully</h3>
-            <p>Redirecting you to your journal...</p>
+            <h3>Signed in</h3>
+            <p>Redirecting...</p>
           </div>
         </div>
       </div>
@@ -67,14 +63,9 @@ export default function GoogleCallback() {
       <div className="auth-page">
         <div className="auth-card">
           <div className="google-status-error">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="10" />
-              <line x1="15" y1="9" x2="9" y2="15" />
-              <line x1="9" y1="9" x2="15" y2="15" />
-            </svg>
-            <h3>Authentication failed</h3>
+            <h3>Failed</h3>
             <p>{errorMsg}</p>
-            <button className="btn btn-primary" onClick={() => navigate('/login', { replace: true })}>
+            <button className="btn btn-sm" onClick={() => navigate('/login', { replace: true })}>
               Back to Login
             </button>
           </div>
@@ -88,8 +79,7 @@ export default function GoogleCallback() {
       <div className="auth-card">
         <div className="google-status-processing">
           <div className="spinner" />
-          <h3>Authenticating with Google...</h3>
-          <p>Please wait while we verify your credentials.</p>
+          <p>Authenticating...</p>
         </div>
       </div>
     </div>
