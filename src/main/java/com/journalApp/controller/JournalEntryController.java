@@ -5,6 +5,8 @@ import com.journalApp.entity.JournalEntry;
 import com.journalApp.service.JournalEntryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,6 +24,8 @@ import java.util.Optional;
 @Tag(name = "3. Journal Entry APIs", description = "Create, Update, Delete and View Entry(s)")
 public class JournalEntryController {
 
+    private static final Logger log = LoggerFactory.getLogger(JournalEntryController.class);
+
     @Autowired
     private JournalEntryService journalEntryService;
 
@@ -34,7 +38,7 @@ public class JournalEntryController {
         if (entries != null && !entries.isEmpty()) {
             return new ResponseEntity<>(entries, HttpStatus.OK);
         }
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(java.util.Collections.emptyList(), HttpStatus.OK);
     }
 
     @PostMapping
@@ -54,6 +58,7 @@ public class JournalEntryController {
             JournalEntry saved = journalEntryService.saveEntry(entry);
             return new ResponseEntity<>(saved, HttpStatus.CREATED);
         } catch (Exception e) {
+            log.error("Failed to create journal entry", e);
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
     }
@@ -72,7 +77,7 @@ public class JournalEntryController {
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    @DeleteMapping("id/{myId}")
+    @DeleteMapping("/id/{myId}")
     @Operation(summary = "Delete Journal Entry By its ID")
     public ResponseEntity<Void> deleteJournalEntryById(@PathVariable String myId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -86,7 +91,7 @@ public class JournalEntryController {
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    @PutMapping("id/{myId}")
+    @PutMapping("/id/{myId}")
     @Operation(summary = "Update Journal Entry By its ID")
     public ResponseEntity<JournalEntry> updateJournalById(@PathVariable String myId, @RequestBody JournalEntryDTO journalEntryDTO) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

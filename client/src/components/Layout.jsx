@@ -17,11 +17,11 @@ export default function Layout() {
         <div className="nav-links">
           {token ? (
             <>
-              <span className="nav-user">Hi, {getUserName()}</span>
+              <span className="nav-user">{getUserName()}</span>
               {isAdmin() && (
                 <Link to="/admin" className="nav-link">Admin</Link>
               )}
-              <button onClick={handleLogout} className="btn btn-sm">Logout</button>
+              <button onClick={handleLogout} className="btn btn-ghost btn-sm">Logout</button>
             </>
           ) : (
             <>

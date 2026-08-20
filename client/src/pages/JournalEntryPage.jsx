@@ -17,7 +17,7 @@ export default function JournalEntryPage() {
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
-  const [decrypted, setDecrypted] = useState(false);
+  const [decrypted, setDecrypted] = useState(isNew);
   const [sentiment, setSentiment] = useState(null);
 
   useEffect(() => {
@@ -103,8 +103,11 @@ export default function JournalEntryPage() {
 
   return (
     <div className="journal-entry-page">
-      <button className="btn btn-sm btn-back" onClick={() => navigate(-1)}>
-        &larr; Back
+      <button className="btn-back" onClick={() => navigate(-1)}>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" />
+        </svg>
+        Back
       </button>
       <h2>{isNew ? 'New Journal Entry' : 'Edit Entry'}</h2>
       {error && <div className="alert alert-error">{error}</div>}
@@ -116,7 +119,12 @@ export default function JournalEntryPage() {
       {!isNew && entry && (
         <p className="entry-meta">
           Created: {new Date(entry.date).toLocaleString()}
-          {isEncrypted(entry.title) && <> | 🔒 Encrypted</>}
+          {isEncrypted(entry.title) && (
+            <>
+              <span style={{ color: 'var(--text-muted)' }}>|</span>
+              <span style={{ color: 'var(--primary)' }}>Encrypted</span>
+            </>
+          )}
         </p>
       )}
       <form onSubmit={handleSubmit} className="entry-form">
@@ -142,7 +150,10 @@ export default function JournalEntryPage() {
         </div>
         {sentimentLabel && (
           <div className="sentiment-preview">
-            Detected mood: <span className={`sentiment sentiment-${sentimentLabel.toLowerCase()}`}>{sentimentLabel}</span>
+            Detected mood:{' '}
+            <span className={`sentiment sentiment-${sentimentLabel.toLowerCase()}`}>
+              {sentimentLabel}
+            </span>
           </div>
         )}
         <div className="form-actions">

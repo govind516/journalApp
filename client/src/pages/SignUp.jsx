@@ -31,7 +31,8 @@ export default function SignUp() {
   return (
     <div className="auth-page">
       <div className="auth-card">
-        <h2>Create Account</h2>
+        <h2>Create account</h2>
+        <p className="subtitle">Start journaling your thoughts</p>
         {displayError && <div className="alert alert-error">{displayError}</div>}
         <form onSubmit={handleSubmit}>
           <div className="form-group">
@@ -42,15 +43,16 @@ export default function SignUp() {
               onChange={(e) => setUserName(e.target.value)}
               required
               placeholder="Choose a username"
+              autoFocus
             />
           </div>
           <div className="form-group">
-            <label>Email (optional)</label>
+            <label>Email <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>(optional)</span></label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="your@email.com"
+              placeholder="you@example.com"
             />
           </div>
           <div className="form-group">
@@ -70,15 +72,15 @@ export default function SignUp() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
-              placeholder="Repeat password"
+              placeholder="Repeat your password"
             />
           </div>
-          <button type="submit" className="btn btn-primary" disabled={loading}>
-            {loading ? 'Creating account...' : 'Sign Up'}
+          <button type="submit" className="btn btn-primary" disabled={loading} style={{ width: '100%' }}>
+            {loading ? 'Creating account...' : 'Create Account'}
           </button>
         </form>
         <p className="auth-footer">
-          Already have an account? <Link to="/login">Login</Link>
+          Already have an account? <Link to="/login">Sign in</Link>
         </p>
       </div>
     </div>
