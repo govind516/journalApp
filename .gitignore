@@ -42,4 +42,4 @@ build/
 ### Node / React ###
 client/node_modules/
 client/dist/
-client/.env
+client/.env*
