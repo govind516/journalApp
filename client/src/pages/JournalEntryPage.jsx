@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { journalAPI } from '../api/api';
 import { useAuth } from '../context/AuthContext';
 import { encrypt, decrypt, isEncrypted } from '../utils/crypto';
+import { analyzeSentiment } from '../utils/sentiment';
 
 export default function JournalEntryPage() {
   const { id } = useParams();
@@ -17,6 +18,7 @@ export default function JournalEntryPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
   const [decrypted, setDecrypted] = useState(false);
+  const [sentiment, setSentiment] = useState(null);
 
   useEffect(() => {
     if (!isNew && id) loadEntry();
@@ -28,6 +30,7 @@ export default function JournalEntryPage() {
       const res = await journalAPI.getById(id);
       const e = res.data;
       setEntry(e);
+      setSentiment(e.sentiment || null);
 
       if (password && isEncrypted(e.title)) {
         const dTitle = await decrypt(e.title, password, getUserName());
@@ -47,11 +50,24 @@ export default function JournalEntryPage() {
     }
   };
 
+  const handleContentChange = (value) => {
+    setContent(value);
+    const combined = (title || '') + '\n' + (value || '');
+    setSentiment(analyzeSentiment(combined));
+  };
+
+  const handleTitleChange = (value) => {
+    setTitle(value);
+    const combined = (value || '') + '\n' + (content || '');
+    setSentiment(analyzeSentiment(combined));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
     setError(null);
     try {
+      const computedSentiment = analyzeSentiment((title || '') + '\n' + (content || ''));
       let sendTitle = title;
       let sendContent = content;
 
@@ -60,11 +76,17 @@ export default function JournalEntryPage() {
         sendContent = content ? await encrypt(content, password, getUserName()) : '';
       }
 
+      const payload = {
+        title: sendTitle,
+        content: sendContent,
+        sentiment: computedSentiment,
+      };
+
       if (isNew) {
-        const res = await journalAPI.create({ title: sendTitle, content: sendContent });
+        const res = await journalAPI.create(payload);
         navigate(`/journal/${res.data.id}`);
       } else {
-        const res = await journalAPI.update(id, { title: sendTitle, content: sendContent });
+        const res = await journalAPI.update(id, payload);
         setEntry(res.data);
         navigate(`/journal/${id}`);
       }
@@ -76,6 +98,8 @@ export default function JournalEntryPage() {
   };
 
   if (loading) return <div className="loading">Loading entry...</div>;
+
+  const sentimentLabel = sentiment || 'NEUTRAL';
 
   return (
     <div className="journal-entry-page">
@@ -92,7 +116,6 @@ export default function JournalEntryPage() {
       {!isNew && entry && (
         <p className="entry-meta">
           Created: {new Date(entry.date).toLocaleString()}
-          {entry.sentiment && <> | Sentiment: <strong>{entry.sentiment}</strong></>}
           {isEncrypted(entry.title) && <> | 🔒 Encrypted</>}
         </p>
       )}
@@ -102,7 +125,7 @@ export default function JournalEntryPage() {
           <input
             type="text"
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            onChange={(e) => handleTitleChange(e.target.value)}
             required
             placeholder={decrypted ? "What's on your mind?" : 'Decrypting...'}
             autoFocus
@@ -112,11 +135,16 @@ export default function JournalEntryPage() {
           <label>Content</label>
           <textarea
             value={content}
-            onChange={(e) => setContent(e.target.value)}
+            onChange={(e) => handleContentChange(e.target.value)}
             placeholder={decrypted ? 'Write your thoughts here...' : 'Decrypting...'}
             rows={12}
           />
         </div>
+        {sentimentLabel && (
+          <div className="sentiment-preview">
+            Detected mood: <span className={`sentiment sentiment-${sentimentLabel.toLowerCase()}`}>{sentimentLabel}</span>
+          </div>
+        )}
         <div className="form-actions">
           <button type="submit" className="btn btn-primary" disabled={saving || !decrypted}>
             {saving ? 'Saving...' : isNew ? 'Create Entry' : 'Save Changes'}

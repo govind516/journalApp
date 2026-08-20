@@ -195,6 +195,7 @@ a:hover { text-decoration: underline; }
 .journal-entry-page { max-width: 640px; }
 .entry-meta { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.5rem; }
 .entry-form { margin-top: 1rem; }
+.sentiment-preview { margin-bottom: 1rem; font-size: 0.85rem; color: var(--text-muted); }
 
 /* Admin */
 .admin-page h2 { margin-bottom: 1.5rem; }

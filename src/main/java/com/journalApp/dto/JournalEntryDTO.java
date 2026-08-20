@@ -1,28 +1,25 @@
 package com.journalApp.dto;
 
-import jakarta.validation.constraints.NotEmpty;
+import com.journalApp.enums.Sentiment;
 
 import java.time.LocalDateTime;
 
 public class JournalEntryDTO {
 
-    private static final java.util.logging.Logger log = java.util.logging.Logger.getLogger(JournalEntryDTO.class.getName());
+    private String title;
+    private String content;
+    private LocalDateTime date;
+    private Sentiment sentiment;
 
     public JournalEntryDTO() {
     }
 
-    public JournalEntryDTO(String title, String content, LocalDateTime date) {
+    public JournalEntryDTO(String title, String content, LocalDateTime date, Sentiment sentiment) {
         this.title = title;
         this.content = content;
         this.date = date;
+        this.sentiment = sentiment;
     }
-
-    @NotEmpty
-    private String title;
-
-    private String content;
-
-    private LocalDateTime date;
 
     public String getTitle() {
         return title;
@@ -46,5 +43,13 @@ public class JournalEntryDTO {
 
     public void setDate(LocalDateTime date) {
         this.date = date;
+    }
+
+    public Sentiment getSentiment() {
+        return sentiment;
+    }
+
+    public void setSentiment(Sentiment sentiment) {
+        this.sentiment = sentiment;
     }
 }

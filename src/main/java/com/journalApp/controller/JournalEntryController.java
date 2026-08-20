@@ -49,6 +49,7 @@ public class JournalEntryController {
             entry.setContent(journalEntryDTO.getContent());
             entry.setDate(LocalDateTime.now());
             entry.setUserName(userName);
+            entry.setSentiment(journalEntryDTO.getSentiment());
 
             JournalEntry saved = journalEntryService.saveEntry(entry);
             return new ResponseEntity<>(saved, HttpStatus.CREATED);
@@ -100,6 +101,9 @@ public class JournalEntryController {
             }
             if (journalEntryDTO.getContent() != null && !journalEntryDTO.getContent().isEmpty()) {
                 old.setContent(journalEntryDTO.getContent());
+            }
+            if (journalEntryDTO.getSentiment() != null) {
+                old.setSentiment(journalEntryDTO.getSentiment());
             }
             JournalEntry saved = journalEntryService.saveEntry(old);
             return new ResponseEntity<>(saved, HttpStatus.OK);
