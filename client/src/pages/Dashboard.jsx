@@ -2,13 +2,14 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { journalAPI, userAPI } from '../api/api';
 import { useAuth } from '../context/AuthContext';
+import { decrypt, isEncrypted } from '../utils/crypto';
 
 export default function Dashboard() {
   const [entries, setEntries] = useState([]);
   const [greeting, setGreeting] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { token } = useAuth();
+  const { token, password, getUserName } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -25,12 +26,26 @@ export default function Dashboard() {
         userAPI.getGreeting(),
       ]);
       if (journalRes.status === 'fulfilled') {
-        setEntries(journalRes.value.data);
+        const raw = journalRes.value.data;
+        if (password) {
+          const decrypted = await Promise.all(
+            raw.map(async (e) => ({
+              ...e,
+              title: isEncrypted(e.title) ? await decrypt(e.title, password, getUserName()) : e.title,
+              content: e.content && isEncrypted(e.content)
+                ? await decrypt(e.content, password, getUserName())
+                : e.content,
+            }))
+          );
+          setEntries(decrypted);
+        } else {
+          setEntries(raw);
+        }
       }
       if (greetingRes.status === 'fulfilled') {
         setGreeting(greetingRes.value.data);
       }
-    } catch (err) {
+    } catch {
       setError('Failed to load data');
     } finally {
       setLoading(false);
@@ -57,6 +72,11 @@ export default function Dashboard() {
         </div>
       )}
       {error && <div className="alert alert-error">{error}</div>}
+      {!password && (
+        <div className="alert alert-info">
+          Journal entries are end-to-end encrypted. Log in with a password to decrypt them.
+        </div>
+      )}
       <div className="dashboard-header">
         <h2>My Journal</h2>
         <button className="btn btn-primary" onClick={() => navigate('/journal/new')}>

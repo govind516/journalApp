@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useCallback } from 'react';
 import { authAPI } from '../api/api';
 
 const AuthContext = createContext(null);
@@ -7,21 +7,15 @@ export function AuthProvider({ children }) {
   const [token, setToken] = useState(localStorage.getItem('token'));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [password, setPassword] = useState(null);
 
-  useEffect(() => {
-    if (token) {
-      localStorage.setItem('token', token);
-    } else {
-      localStorage.removeItem('token');
-    }
-  }, [token]);
-
-  const login = async (userName, password) => {
+  const login = useCallback(async (userName, pwd) => {
     setLoading(true);
     setError(null);
     try {
-      const res = await authAPI.login({ userName, password });
+      const res = await authAPI.login({ userName, password: pwd });
       setToken(res.data);
+      setPassword(pwd);
       return true;
     } catch (err) {
       setError(err.response?.data || 'Login failed');
@@ -29,13 +23,13 @@ export function AuthProvider({ children }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const signUp = async (userName, password, email) => {
+  const signUp = useCallback(async (userName, pwd, email) => {
     setLoading(true);
     setError(null);
     try {
-      await authAPI.signUp({ userName, password, email, sentimentAnalysis: false });
+      await authAPI.signUp({ userName, password: pwd, email, sentimentAnalysis: false });
       return true;
     } catch (err) {
       setError(err.response?.data || 'Sign up failed');
@@ -43,9 +37,9 @@ export function AuthProvider({ children }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const googleLogin = async (code) => {
+  const googleLogin = useCallback(async (code) => {
     setLoading(true);
     setError(null);
     try {
@@ -58,14 +52,15 @@ export function AuthProvider({ children }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     setToken(null);
+    setPassword(null);
     localStorage.removeItem('token');
-  };
+  }, []);
 
-  const isAdmin = () => {
+  const isAdmin = useCallback(() => {
     if (!token) return false;
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
@@ -73,9 +68,9 @@ export function AuthProvider({ children }) {
     } catch {
       return false;
     }
-  };
+  }, [token]);
 
-  const getUserName = () => {
+  const getUserName = useCallback(() => {
     if (!token) return '';
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
@@ -83,11 +78,11 @@ export function AuthProvider({ children }) {
     } catch {
       return '';
     }
-  };
+  }, [token]);
 
   return (
     <AuthContext.Provider
-      value={{ token, loading, error, login, signUp, googleLogin, logout, isAdmin, getUserName, setError }}
+      value={{ token, password, loading, error, login, signUp, googleLogin, logout, isAdmin, getUserName, setError }}
     >
       {children}
     </AuthContext.Provider>
