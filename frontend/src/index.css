@@ -1,0 +1,240 @@
+@import "@fontsource-variable/playfair-display";
+@import "@fontsource-variable/plus-jakarta-sans";
+@import "@fontsource-variable/jetbrains-mono";
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+    --font-heading: 'Playfair Display Variable', Georgia, serif;
+    --font-serif: 'Playfair Display Variable', Georgia, serif;
+    --font-sans: 'Plus Jakarta Sans Variable', sans-serif;
+    --font-mono: 'JetBrains Mono Variable', monospace;
+
+    /* Oat parchment — a step deeper than near-white cream. */
+    --linen: #f6f1e4;
+    --paper: #fffaf0;
+    --sand: #ece3d0;
+    --ink: #1e1a15;
+    --ink-soft: #3d372f;
+    --muted-ink: #6f6455;
+    --placeholder: #a89a83;
+    /* Baked clay — deepened so small links clear AA on oat paper. */
+    --terracotta: #a8481f;
+    --terracotta-deep: #863816;
+    --terracotta-soft: #f4e3d2;
+    --on-accent: #ffffff;
+    --ochre: #c07f24;
+    --sage: #66744f;
+    --sage-deep: #46532f;
+    --sage-soft: #e6e9d5;
+    /* Moss — the second, less-common anchor for rhythm/success. */
+    --moss: #55663a;
+    --line: #e0d4bd;
+    --line-strong: #c9b896;
+    --mood-calm-bg: #e3e9d4;
+    --mood-calm-text: #33441f;
+    --mood-pensive-bg: #dfe9ee;
+    --mood-pensive-text: #23434f;
+    --mood-inspired-bg: #f9e8c8;
+    --mood-inspired-text: #6b430a;
+    --mood-restless-bg: #f6ddcb;
+    --mood-restless-text: #6d2c0e;
+    --mood-grateful-bg: #eedfe7;
+    --mood-grateful-text: #4e2340;
+    --error-bg: #f7e3d6;
+    --error-text: #7c3418;
+    --overlay: rgba(246, 241, 228, 0.88);
+    --card-overlay: rgba(255, 250, 240, 0.86);
+    --background: #f6f1e4;
+    --foreground: #1e1a15;
+    --card: #fffaf0;
+    --card-foreground: #1e1a15;
+    --popover: #fffaf0;
+    --popover-foreground: #1e1a15;
+    --primary: #a8481f;
+    --primary-foreground: #ffffff;
+    --secondary: #ece3d0;
+    --secondary-foreground: #3d372f;
+    --muted: #ece3d0;
+    --muted-foreground: #6f6455;
+    --accent: #f3e2d3;
+    --accent-foreground: #8f3c1d;
+    --border: #e0d4bd;
+    --input: #c9b896;
+    --ring: #a8481f;
+    --radius: 0.75rem;
+    --radius-sm: 0.625rem;
+    --radius-md: 0.75rem;
+    --radius-lg: 1rem;
+    --radius-card: 1.5rem;
+    --radius-hero: 1.75rem;
+    /* Warm shadows that survive both themes. */
+    --shadow-sm: 0 1px 2px rgba(92, 65, 42, 0.08);
+    --shadow-md: 0 12px 40px -24px rgba(92, 65, 42, 0.35);
+    --shadow-lg: 0 30px 80px -30px rgba(92, 65, 42, 0.4);
+    --shadow-card-hover: 0 14px 35px -20px rgba(92, 65, 42, 0.35);
+    /* Clay destructive — alarm red would break the palette. */
+    --destructive: #a83a26;
+    --destructive-deep: #86301f;
+    --destructive-soft: #f7e3d8;
+    --on-destructive: #ffffff;
+    --sidebar: #fffaf0;
+    --sidebar-foreground: #1e1a15;
+    --sidebar-primary: #a8481f;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: #ece3d0;
+    --sidebar-accent-foreground: #3d372f;
+    --sidebar-border: #e0d4bd;
+    --sidebar-ring: #a8481f;
+}
+
+/* Lamplight — a genuine dark theme for late-night writing, not an inversion. */
+.dark {
+    --linen: #161210;
+    --paper: #201a15;
+    --sand: #2a231b;
+    --ink: #f0e6d2;
+    --ink-soft: #d8c9ae;
+    --muted-ink: #a8977f;
+    --placeholder: #6f6250;
+    --terracotta: #e0784a;
+    --terracotta-deep: #eda06c;
+    --terracotta-soft: #3a2418;
+    --on-accent: #1e1410;
+    --ochre: #e0a04a;
+    --sage: #9aa87e;
+    --sage-deep: #bcc79b;
+    --sage-soft: #2c3324;
+    --moss: #9aa87e;
+    --line: #372e24;
+    --line-strong: #4d4232;
+    --mood-calm-bg: #26301f;
+    --mood-calm-text: #c2d1a0;
+    --mood-pensive-bg: #1f3038;
+    --mood-pensive-text: #a9cfdd;
+    --mood-inspired-bg: #3a2c14;
+    --mood-inspired-text: #f0cd8a;
+    --mood-restless-bg: #3a2115;
+    --mood-restless-text: #f0a67e;
+    --mood-grateful-bg: #33202e;
+    --mood-grateful-text: #dfa9c6;
+    --error-bg: #3a2118;
+    --error-text: #f0a67e;
+    --overlay: rgba(22, 18, 16, 0.88);
+    --card-overlay: rgba(32, 26, 21, 0.86);
+    --background: #161210;
+    --foreground: #f0e6d2;
+    --card: #201a15;
+    --card-foreground: #f0e6d2;
+    --popover: #201a15;
+    --popover-foreground: #f0e6d2;
+    --primary: #e0784a;
+    --primary-foreground: #1e1410;
+    --secondary: #2a231b;
+    --secondary-foreground: #d8c9ae;
+    --muted: #2a231b;
+    --muted-foreground: #a8977f;
+    --accent: #3a2418;
+    --accent-foreground: #eda06c;
+    --border: #372e24;
+    --input: #4d4232;
+    --ring: #e0784a;
+    --sidebar: #201a15;
+    --sidebar-foreground: #f0e6d2;
+    --sidebar-primary: #e0784a;
+    --sidebar-primary-foreground: #1e1410;
+    --sidebar-accent: #2a231b;
+    --sidebar-accent-foreground: #d8c9ae;
+    --sidebar-border: #372e24;
+    --sidebar-ring: #e0784a;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 12px 40px -18px rgba(0, 0, 0, 0.7);
+    --shadow-lg: 0 30px 80px -30px rgba(0, 0, 0, 0.8);
+    --shadow-card-hover: 0 14px 35px -16px rgba(0, 0, 0, 0.7);
+    --destructive: #e07a5a;
+    --destructive-deep: #eda27f;
+    --destructive-soft: #3a2119;
+    --on-destructive: #1e1410;
+}
+
+@layer base {
+  html {
+    @apply font-sans;
+    background: var(--linen);
+  }
+  /* Visible keyboard focus everywhere, in both themes. */
+  :focus-visible {
+    outline: 2px solid var(--terracotta);
+    outline-offset: 2px;
+  }
+}
+
+@keyframes fade-up { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes float-soft { 0%, 100% { transform: translateY(0) rotate(1.5deg); } 50% { transform: translateY(-6px) rotate(1.5deg); } }
+@keyframes ember-glow { 0%, 100% { opacity: 0.55; transform: scale(1); } 50% { opacity: 1; transform: scale(1.06); } }
+.animate-fade-up { animation: fade-up 700ms cubic-bezier(.2,.8,.2,1) both; }
+.animate-float-soft { animation: float-soft 8s ease-in-out infinite; }
+.animate-ember-glow { animation: ember-glow 3.2s ease-in-out infinite; }
+.paper-noise { position: relative; }
+/* One shared grain — identical presence in daylight and lamplight. */
+.paper-noise::before { content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: .05; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.5'/%3E%3C/svg%3E"); }
+.display-heading { font-family: var(--font-serif); font-weight: 500; letter-spacing: -.035em; color: var(--ink); }
+.eyebrow { font-family: var(--font-sans); font-size: 10px; font-weight: 700; letter-spacing: .14em; line-height: 1.4; text-transform: uppercase; color: var(--muted-ink); }
+/* Asymmetric editorial header: eyebrow struck through with a rule. */
+.eyebrow-rule { display: flex; align-items: center; gap: 12px; }
+.eyebrow-rule::after { content: ""; height: 1px; flex: 1; max-width: 120px; background: var(--line-strong); }
+/* The only sanctioned eyebrow on filled accent surfaces — plain .eyebrow
+   would render near-invisible grey-on-clay (it beats utilities). */
+.eyebrow-on-accent { font-family: var(--font-sans); font-size: 10px; font-weight: 700; letter-spacing: .14em; line-height: 1.4; text-transform: uppercase; color: color-mix(in srgb, var(--on-accent) 88%, transparent); }
+/* Shared kbd treatment. */
+.kbd { border-radius: 6px; background: var(--sand); padding: 2px 6px; font-family: var(--font-mono); font-size: 10px; color: var(--muted-ink); border: 1px solid var(--line); }
+/* Drop cap for the reading view — the signature print detail. */
+.drop-cap::first-letter { font-family: var(--font-serif); font-weight: 600; font-size: 3.4em; line-height: 0.9; float: left; margin: 0.06em 0.12em 0 0; color: var(--terracotta-deep); }
+.field-label { display: flex; flex-direction: column; gap: 8px; font-size: 12px; font-weight: 700; letter-spacing: .02em; color: var(--ink-soft); }
+.field-label input, .field-label select { font-weight: 400; letter-spacing: 0; }
+.warm-select { height: 40px; width: 100%; border: 1px solid var(--line-strong); border-radius: 12px; background: var(--paper); padding: 0 12px; font-size: 14px; color: var(--ink-soft); outline: none; transition: border-color 180ms ease, box-shadow 180ms ease; }
+.warm-select:focus { border-color: var(--terracotta); box-shadow: 0 0 0 3px var(--terracotta-soft); }
+.nav-item { display: flex; align-items: center; gap: 11px; border-radius: 12px; padding: 10px 12px; color: var(--muted-ink); font-size: 13px; font-weight: 600; transition: color 180ms ease, background 180ms ease, transform 180ms ease; }
+.nav-item:hover { color: var(--ink); background: var(--sand); transform: translateX(2px); }
+.nav-item-active { color: var(--terracotta-deep); background: var(--terracotta-soft); }
+.mood-chip { display: inline-flex; align-items: center; gap: 5px; border: 1px solid var(--line); border-radius: 999px; background: var(--paper); padding: 6px 10px; font-size: 12px; color: var(--muted-ink); transition: border-color 180ms ease, background 180ms ease, transform 180ms ease; }
+.mood-chip:hover { border-color: var(--line-strong); transform: translateY(-1px); }
+.mood-chip-active { border-color: var(--terracotta); background: var(--terracotta-soft); color: var(--terracotta-deep); }
+.tag-chip, .tag-chip-static { display: inline-flex; align-items: center; gap: 5px; border-radius: 999px; background: var(--sand); padding: 5px 9px; font-size: 11px; color: var(--muted-ink); }
+.tag-chip button { display: inline-flex; color: var(--muted-ink); }
+.tag-input { width: 90px; border: 0; background: transparent; padding: 5px 4px; font-size: 12px; outline: none; }
+@media (max-width: 640px) {
+  /* iOS zooms on focus below 16px — keep the tag input calm on phones. */
+  .tag-input { font-size: 16px; width: 110px; }
+}
+.heat-cell { display: block; aspect-ratio: 1; width: 100%; min-width: 8px; border-radius: 3px; border: 1px solid transparent; transition: transform 160ms ease, filter 160ms ease; }
+button.heat-cell:hover { transform: scale(1.22); filter: brightness(.94); }
+.heat-0 { background: var(--sand); border-color: var(--line); }
+.heat-1 { background: #f0c9a8; }
+.dark .heat-1 { background: #4a2c1c; }
+.heat-2 { background: #e29a6b; }
+.dark .heat-2 { background: #7c4526; }
+.heat-3 { background: #c65f30; }
+.dark .heat-3 { background: #b25a2e; }
+.heat-4 { background: #8f3c1d; }
+.dark .heat-4 { background: #e0784a; }
+mark { background: var(--terracotta-soft); color: var(--terracotta-deep); border-radius: 3px; padding: 0 2px; }
+.setting-toggle { display: flex; align-items: center; justify-content: space-between; gap: 16px; border-bottom: 1px solid var(--line); padding-bottom: 18px; font-size: 14px; }
+.setting-toggle strong, .setting-toggle small { display: block; }
+.setting-toggle small { margin-top: 4px; font-size: 12px; color: var(--muted-ink); }
+.setting-toggle input { height: 21px; width: 38px; accent-color: var(--terracotta); }
+
+/* Theme-aware translucent surfaces (replaces hardcoded light rgbas). */
+.theme-overlay { background: var(--overlay); }
+.theme-card-overlay { background: var(--card-overlay); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
