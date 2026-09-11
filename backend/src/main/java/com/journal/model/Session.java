@@ -20,4 +20,7 @@ public class Session {
 
     @Column(name = "expires_at", nullable = false)
     private Instant expiresAt;
+
+    @Column(name = "last_active_at", nullable = false)
+    private Instant lastActiveAt;
 }

@@ -13,9 +13,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -23,6 +25,9 @@ import java.util.UUID;
 public class AuthService {
 
     public static final int SESSION_DAYS = 30;
+    public static final Duration SESSION_IDLE_TIMEOUT = Duration.ofHours(12);
+    public static final Duration SESSION_TOUCH_THRESHOLD = Duration.ofMinutes(5);
+    public static final int MAX_SESSIONS_PER_USER = 5;
 
     /**
      * Timing ballast, not a secret: a well-formed hash run through the real
@@ -78,17 +83,42 @@ public class AuthService {
         return user;
     }
 
+    @Transactional
     public String startSession(String userId) {
         byte[] tokenBytes = new byte[32];
         random.nextBytes(tokenBytes);
         String token = Base64.getUrlEncoder().withoutPadding().encodeToString(tokenBytes);
 
+        Instant now = Instant.now();
         Session session = new Session();
         session.setToken(token);
         session.setUserId(userId);
-        session.setExpiresAt(Instant.now().plus(SESSION_DAYS, ChronoUnit.DAYS));
+        session.setExpiresAt(now.plus(SESSION_DAYS, ChronoUnit.DAYS));
+        session.setLastActiveAt(now);
         sessionRepository.save(session);
+        evictOldestBeyondCap(userId, token, now);
         return token;
+    }
+
+    /**
+     * Keeps at most MAX_SESSIONS_PER_USER live sessions. Oldest go first —
+     * ordered by expiry, which tracks creation order since every session
+     * lives exactly SESSION_DAYS. The just-created session is never evicted.
+     */
+    private void evictOldestBeyondCap(String userId, String newToken, Instant now) {
+        List<Session> live =
+                sessionRepository.findByUserIdAndExpiresAtAfterOrderByExpiresAtAsc(userId, now);
+        int excess = live.size() - MAX_SESSIONS_PER_USER;
+        for (Session candidate : live) {
+            if (excess <= 0) {
+                break;
+            }
+            if (candidate.getToken().equals(newToken)) {
+                continue;
+            }
+            sessionRepository.delete(candidate);
+            excess--;
+        }
     }
 
     @Transactional

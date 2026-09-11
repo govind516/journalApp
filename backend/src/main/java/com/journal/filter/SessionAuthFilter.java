@@ -4,6 +4,7 @@ import com.journal.model.Session;
 import com.journal.model.User;
 import com.journal.repository.SessionRepository;
 import com.journal.repository.UserRepository;
+import com.journal.service.AuthService;
 import com.journal.util.CurrentUserHolder;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -44,9 +45,23 @@ public class SessionAuthFilter extends OncePerRequestFilter {
         try {
             String token = readCookie(request, SESSION_COOKIE);
             if (token != null) {
-                Optional<Session> session = sessionRepository.findById(token);
-                if (session.isPresent() && session.get().getExpiresAt().isAfter(Instant.now())) {
-                    userRepository.findById(session.get().getUserId()).ifPresent(CurrentUserHolder::set);
+                Optional<Session> maybeSession = sessionRepository.findById(token);
+                if (maybeSession.isPresent()) {
+                    Session session = maybeSession.get();
+                    Instant now = Instant.now();
+                    // Both gates must pass: absolute lifetime and idle window.
+                    boolean live = session.getExpiresAt().isAfter(now)
+                            && session.getLastActiveAt().plus(AuthService.SESSION_IDLE_TIMEOUT).isAfter(now);
+                    if (live) {
+                        // Touch at most every few minutes, not on every request.
+                        if (session.getLastActiveAt().plus(AuthService.SESSION_TOUCH_THRESHOLD).isBefore(now)) {
+                            session.setLastActiveAt(now);
+                            sessionRepository.save(session);
+                        }
+                        userRepository.findById(session.getUserId()).ifPresent(CurrentUserHolder::set);
+                    } else {
+                        sessionRepository.delete(session);
+                    }
                 }
             }
             chain.doFilter(request, response);
