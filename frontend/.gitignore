@@ -14,3 +14,6 @@ npm-debug.log*
 !.vscode/extensions.json
 # vite
 *.tsbuildinfo
+# playwright
+test-results/
+playwright-report/

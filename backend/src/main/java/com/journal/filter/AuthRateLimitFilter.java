@@ -45,6 +45,12 @@ public class AuthRateLimitFilter extends OncePerRequestFilter {
     private final AuthRateLimiter limiter;
     private final boolean trustProxy;
 
+    // Mirrors CorsConfig's allowlist so rejected responses are readable
+    // cross-origin; without these, browsers hide even the 429 behind a
+    // generic network error.
+    @Value("${app.cors.origins}")
+    private String corsOrigins = "";
+
     public AuthRateLimitFilter(AuthRateLimiter limiter,
             @Value("${app.trust-proxy:false}") boolean trustProxy) {
         this.limiter = limiter;
@@ -84,7 +90,23 @@ public class AuthRateLimitFilter extends OncePerRequestFilter {
         response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setHeader("Retry-After", String.valueOf(wait.get().toSeconds()));
+        setCorsHeaders(request, response);
         MAPPER.writeValue(response.getWriter(), new ApiError("Too many attempts, please try again later"));
+    }
+
+    private void setCorsHeaders(HttpServletRequest request, HttpServletResponse response) {
+        String origin = request.getHeader("Origin");
+        if (origin == null) {
+            return;
+        }
+        for (String allowed : corsOrigins.split(",")) {
+            if (allowed.strip().equals(origin)) {
+                response.setHeader("Access-Control-Allow-Origin", origin);
+                response.setHeader("Vary", "Origin");
+                response.setHeader("Access-Control-Allow-Credentials", "true");
+                return;
+            }
+        }
     }
 
     static String requestPath(HttpServletRequest request) {

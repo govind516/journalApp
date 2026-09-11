@@ -9,6 +9,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -56,14 +57,25 @@ class AuthRateLimitTrustedProxyTest {
         for (int i = 0; i < 10; i++) {
             mvc.perform(post("/api/auth/login")
                             .contentType(MediaType.APPLICATION_JSON)
+                            .header("Origin", "http://localhost:5173")
                             .header("X-Forwarded-For", "10.33.0.7")
                             .content("{\"email\":\"rl-trusted-ip-" + i + "@example.com\",\"password\":\"wrongpassword\"}"))
                     .andExpect(status().isUnauthorized());
         }
+        // Allowed origins see the rejection; anything else gets no CORS echo.
         mvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
+                        .header("Origin", "http://localhost:5173")
                         .header("X-Forwarded-For", "10.33.0.7")
                         .content("{\"email\":\"rl-trusted-ip-10@example.com\",\"password\":\"wrongpassword\"}"))
-                .andExpect(status().isTooManyRequests());
+                .andExpect(status().isTooManyRequests())
+                .andExpect(header().string("Access-Control-Allow-Origin", "http://localhost:5173"));
+        mvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("Origin", "http://evil.example.com")
+                        .header("X-Forwarded-For", "10.33.0.7")
+                        .content("{\"email\":\"rl-trusted-ip-11@example.com\",\"password\":\"wrongpassword\"}"))
+                .andExpect(status().isTooManyRequests())
+                .andExpect(header().doesNotExist("Access-Control-Allow-Origin"));
     }
 }

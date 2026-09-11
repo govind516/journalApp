@@ -14,5 +14,7 @@ export default defineConfig({
     setupFiles: ["./src/test/setup.ts"],
     globals: false,
     testTimeout: 10000,
+    // Playwright owns e2e/ — keep the runners from collecting each other's suites.
+    include: ["src/**/*.{test,spec}.?(c|m)[jt]s?(x)"],
   },
 });

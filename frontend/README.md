@@ -57,10 +57,20 @@ The seeder signs up (or logs in on `409`), writes ~3 months of entries via `PUT 
 
 ## Tests
 
-Vitest + Testing Library + MSW (`src/test/server.ts`, `handlers.ts`). Suites cover auth/privacy, today, timeline, offline queue, settings/import, ask/insights, unsubscribe, normalize, app load. Run:
+Vitest + Testing Library + MSW (`src/test/server.ts`, `handlers.ts`). Suites cover auth, today, timeline, offline queue, settings/import, ask/insights, unsubscribe, normalize, app load. Run:
 
 ```bash
 npm test
+```
+
+## End-to-end tests (Playwright, real stack)
+
+`e2e/` runs 4 specs (auth journey, auth-error parity, login rate limit, entry CRUD) against the compose stack — real Postgres + backend, no mocks. Serial (`workers: 1`): specs share the backend's in-memory rate-limit budget, so later specs are budget-aware and `rate-limit` runs last. Not in CI (no compose job there yet — follow-up).
+
+```bash
+# from frontend/
+npm run e2e   # sh ../scripts/e2e.sh: rebuilds + starts compose, restarts backend
+              # for deterministic budgets, waits for health, runs playwright
 ```
 
 ## Docker
