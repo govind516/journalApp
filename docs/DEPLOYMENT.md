@@ -32,6 +32,7 @@ Backend (process env, same names as `application.properties` placeholders):
 | `DB_PASSWORD` | `<secret>` (never commit; root `.gitignore` covers `*.env`) |
 | `SPRING_PROFILES_ACTIVE` | `prod` (prod only; activates Secure cookies + prod CORS) |
 | `APP_CORS_ORIGINS_PROD` | e.g. `https://app.example.com` — REQUIRED in prod, no default; boot fails fast if unset |
+| `REMINDER_SIGNING_SECRET` | REQUIRED in prod (signs unsubscribe links); boot refuses to start without it — same fail-fast pattern |
 
 Frontend (build arg / build-time env):
 

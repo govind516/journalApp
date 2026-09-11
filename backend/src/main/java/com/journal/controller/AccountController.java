@@ -21,6 +21,9 @@ public class AccountController {
     @Value("${app.cookie.secure:false}")
     private boolean cookieSecure;
 
+    @Value("${app.cookie.same-site:Lax}")
+    private String cookieSameSite;
+
     private final AuthService authService;
 
     public AccountController(AuthService authService) {
@@ -37,6 +40,7 @@ public class AccountController {
         cookie.setPath("/");
         cookie.setMaxAge(0);
         cookie.setSecure(cookieSecure);
+        cookie.setAttribute("SameSite", cookieSameSite);
         response.addCookie(cookie);
     }
 }

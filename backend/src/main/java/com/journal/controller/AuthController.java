@@ -76,6 +76,7 @@ public class AuthController {
         cookie.setPath("/");
         cookie.setMaxAge(0);
         cookie.setSecure(cookieSecure);
+        cookie.setAttribute("SameSite", cookieSameSite);
         response.addCookie(cookie);
     }
 
