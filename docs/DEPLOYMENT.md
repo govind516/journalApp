@@ -16,7 +16,7 @@ docker build --build-arg VITE_API_BASE_URL=https://api.example.com -t journal-fr
 
 ## Production wiring (pick one API strategy)
 
-A. **Direct (default):** frontend built with `VITE_API_BASE_URL=https://api.example.com`; browser calls the backend origin directly with cookies. Backend CORS must allow the frontend origin; cookies need `Secure`/`SameSite` appropriate to same-site vs cross-site (separate hardening task).
+A. **Direct (default):** frontend built with `VITE_API_BASE_URL=https://api.example.com`; browser calls the backend origin directly with cookies. Backend CORS must allow the frontend origin; session cookies are `SameSite=Lax` with `Secure` driven by profile (`false` default/local, `true` under `SPRING_PROFILES_ACTIVE=prod`).
 
 B. **Same-origin proxy:** serve frontend and proxy `/api/` to `http://backend:8000` (see commented block in `frontend/nginx.conf`). Then build frontend with empty `VITE_API_BASE_URL` and keep the Vite proxy dev-only.
 
@@ -30,6 +30,8 @@ Backend (process env, same names as `application.properties` placeholders):
 | `DB_NAME` | `journaldb` |
 | `DB_USER` | `journal` |
 | `DB_PASSWORD` | `<secret>` (never commit; root `.gitignore` covers `*.env`) |
+| `SPRING_PROFILES_ACTIVE` | `prod` (prod only; activates Secure cookies + prod CORS) |
+| `APP_CORS_ORIGINS_PROD` | e.g. `https://app.example.com` — REQUIRED in prod, no default; boot fails fast if unset |
 
 Frontend (build arg / build-time env):
 
@@ -50,5 +52,5 @@ Docker image builds are manual for now (no registry push in CI).
 
 ## Notes
 
-* `spring.jpa.hibernate.ddl-auto=update` is convenient for MVP but not a migration strategy — introduce Flyway/Liquibase before production writes matter.
-* `backend/docker-compose.yml` is local-Postgres-only; production compose (postgres volume, backend, frontend, healthchecks) is a separate infra task and intentionally not in this doc change.
+* `spring.jpa.hibernate.ddl-auto=validate` + Flyway (`backend/src/main/resources/db/migration/`, baseline `V1__initial_schema.sql`) own the schema; never hand-edit applied migrations.
+* `backend/docker-compose.yml` is local-Postgres-only; full-stack local orchestration lives in root `compose.yml`.

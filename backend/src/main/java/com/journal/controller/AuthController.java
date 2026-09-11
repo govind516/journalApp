@@ -11,6 +11,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,6 +20,12 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private static final int SESSION_MAX_AGE_SECONDS = AuthService.SESSION_DAYS * 24 * 60 * 60;
+
+    @Value("${app.cookie.secure:false}")
+    private boolean cookieSecure;
+
+    @Value("${app.cookie.same-site:Lax}")
+    private String cookieSameSite;
 
     private final AuthService authService;
 
@@ -58,9 +65,8 @@ public class AuthController {
         cookie.setHttpOnly(true);
         cookie.setPath("/");
         cookie.setMaxAge(SESSION_MAX_AGE_SECONDS);
-        // Secure only over HTTPS so localhost development keeps working.
-        cookie.setSecure(request.isSecure());
-        cookie.setAttribute("SameSite", "Lax");
+        cookie.setSecure(cookieSecure);
+        cookie.setAttribute("SameSite", cookieSameSite);
         response.addCookie(cookie);
     }
 
@@ -69,7 +75,7 @@ public class AuthController {
         cookie.setHttpOnly(true);
         cookie.setPath("/");
         cookie.setMaxAge(0);
-        cookie.setSecure(request.isSecure());
+        cookie.setSecure(cookieSecure);
         response.addCookie(cookie);
     }
 

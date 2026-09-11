@@ -7,6 +7,7 @@ import com.journal.util.CurrentUserHolder;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,6 +17,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/account")
 public class AccountController {
+
+    @Value("${app.cookie.secure:false}")
+    private boolean cookieSecure;
 
     private final AuthService authService;
 
@@ -32,7 +36,7 @@ public class AccountController {
         cookie.setHttpOnly(true);
         cookie.setPath("/");
         cookie.setMaxAge(0);
-        cookie.setSecure(request.isSecure());
+        cookie.setSecure(cookieSecure);
         response.addCookie(cookie);
     }
 }
