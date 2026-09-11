@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { MemoryRouter } from "react-router-dom";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -34,6 +34,7 @@ describe("App boot with the real query client", () => {
     );
     expect(await screen.findByTestId("today-page", {}, { timeout: 8000 })).toBeInTheDocument();
     const editor = (await screen.findByTestId("today-editor-textarea")) as HTMLTextAreaElement;
-    expect(editor.value).toContain("kitchen floor");
+    // Route-split loading adds an async hop before server data arrives.
+    await waitFor(() => expect(editor.value).toContain("kitchen floor"));
   });
 });

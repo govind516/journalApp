@@ -1,9 +1,11 @@
 import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
+import { HttpResponse, delay, http } from "msw";
 import { Route, Routes } from "react-router-dom";
 import Today from "@/pages/Today";
 import { renderApp } from "./utils";
+import { server } from "./server";
 import { TODAY } from "./handlers";
 
 function renderToday() {
@@ -26,6 +28,20 @@ describe("Today editor", () => {
     await user.type(editor, "Fresh words for today.");
     await waitFor(() => expect(screen.getByTestId("save-status-indicator")).toHaveTextContent("Saved just now"), { timeout: 5000 });
     expect(screen.getByTestId("word-count-indicator")).toHaveTextContent("4 words");
+  });
+
+  it("shows Saving… while the save is in flight", async () => {
+    server.use(http.put("/api/entries/date/:date", async () => {
+      await delay(600);
+      return HttpResponse.json({ detail: "slow" }, { status: 500 });
+    }));
+    const user = userEvent.setup();
+    renderToday();
+    const editor = await screen.findByTestId("today-editor-textarea");
+    await waitFor(() => expect((editor as HTMLTextAreaElement).value).toContain("kitchen floor"));
+    await user.clear(editor);
+    await user.type(editor, "Slow words.");
+    await waitFor(() => expect(screen.getByTestId("save-status-indicator")).toHaveTextContent("Saving…"), { timeout: 5000 });
   });
 
   it("recovers an unsent draft only when the server holds nothing", async () => {

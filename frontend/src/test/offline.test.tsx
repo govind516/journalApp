@@ -72,7 +72,7 @@ describe("Offline write queue", () => {
       const user = userEvent.setup();
       await user.clear(editor);
       await user.type(editor, "Offline words that must not be lost.");
-      await waitFor(() => expect(screen.getByTestId("save-status-indicator")).toHaveTextContent("Will save when you return"), { timeout: 8000 });
+      await waitFor(() => expect(screen.getByTestId("save-status-indicator")).toHaveTextContent("Waiting — 1 queued"), { timeout: 8000 });
       expect(queuedCount()).toBe(1);
     } finally {
       server.resetHandlers();
@@ -103,5 +103,22 @@ describe("Offline write queue", () => {
       setOnline(true);
       window.dispatchEvent(new Event("online"));
     }
+  });
+
+  it("shows queued count in the pill while online", async () => {
+    renderApp(
+      <Routes>
+        <Route path="/app" element={<AppShell />} />
+      </Routes>,
+      "/app"
+    );
+    await screen.findByTestId("journal-app-shell");
+    expect(screen.queryByTestId("offline-pill")).not.toBeInTheDocument();
+    enqueueWrite(
+      { date: "2026-09-07", content: "Waiting online.", mood: null, tags: [], backfilled: false },
+      null
+    );
+    expect(await screen.findByTestId("offline-pill")).toHaveTextContent("Back online");
+    expect(await screen.findByTestId("offline-pill")).toHaveTextContent("1 page waiting");
   });
 });

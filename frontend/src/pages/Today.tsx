@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useSearchParams } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
-import { Check, ChevronRight, Focus, Keyboard, Lightbulb, Minimize2, Plus, RotateCcw, Tag, X } from "lucide-react";
+import { Check, ChevronRight, Clock, Focus, Keyboard, Lightbulb, Minimize2, Plus, RotateCcw, Tag, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,7 +10,7 @@ import { apiPut } from "@/lib/api";
 import { fetchMe } from "@/lib/session";
 import { fetchEntryByDate, fetchInsights, fetchMemory, fetchOnThisDay, fetchToday } from "@/lib/normalize";
 import { clearDraft, loadDraft, saveDraft, sweepStaleDrafts } from "@/lib/drafts";
-import { enqueueWrite } from "@/lib/syncQueue";
+import { enqueueWrite, queuedCount, subscribeQueue } from "@/lib/syncQueue";
 import EmberMark from "@/components/EmberMark";
 import { MOODS, moodLabel } from "@/lib/types";
 import type { Entry, EntryPayload, MemorySignal } from "@/lib/types";
@@ -51,6 +51,10 @@ export default function Today() {
   const [dirty, setDirty] = useState(false);
   const [savedLabel, setSavedLabel] = useState("Saved");
   const [savedTick, setSavedTick] = useState(0);
+  // Live queue depth: the indicator must reflect actual queue status, not just
+  // "no error thrown" — a write can sit queued while the label says Saved.
+  const [queued, setQueued] = useState(() => queuedCount());
+  useEffect(() => subscribeQueue(() => setQueued(queuedCount())), []);
   const [promptIndex, setPromptIndex] = useState(() => new Date().getDate() % prompts.length);
   const [promptVisible, setPromptVisible] = useState(true);
   const [focusMode, setFocusMode] = useState(() => { try { return window.localStorage.getItem("journal-focus") === "1"; } catch { return false; } });
@@ -193,10 +197,12 @@ export default function Today() {
           >
             {save.isPending
               ? <span className="size-2 shrink-0 animate-pulse rounded-full bg-[var(--ochre)]" />
-              : savedLabel.startsWith("Saved")
-                ? <Check size={13} className="shrink-0 text-[var(--moss)]" />
-                : null}
-            <span className="truncate">{savedLabel}</span>
+              : queued > 0
+                ? <Clock size={13} className="shrink-0 text-[var(--terracotta)]" />
+                : savedLabel.startsWith("Saved")
+                  ? <Check size={13} className="shrink-0 text-[var(--moss)]" />
+                  : null}
+            <span className="truncate">{save.isPending ? "Saving…" : queued > 0 ? `Waiting — ${queued} queued` : savedLabel}</span>
           </motion.span>
           <span className="shrink-0 text-xs tabular-nums text-[var(--muted-ink)]" data-testid="word-count-indicator">{wordCount} {wordCount === 1 ? "word" : "words"}</span>
           <span className="flex shrink-0 items-center gap-1">

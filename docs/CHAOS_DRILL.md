@@ -14,11 +14,15 @@ against compose, `docker kill` (SIGKILL, no graceful shutdown), observe.
   `journal-write-queue` in localStorage (survives reload). No spinner hang,
   no fake success at failure time.
 * After backend recovery with no further interaction, the indicator reverts
-  to the idle **"Saved"** copy while the write is still only queued.
+  to the idle **"Saved"** while the write is still only queued.
   ⚠️ Known wrinkle (minor, no data risk): the idle label is
   indistinguishable from a real success. Typing more self-heals via a fresh
   save; the stale queued item can never clobber it (flush takes the
   conflict path and preserves queued words as a draft).
+  **Resolved:** the Today save indicator is now queue-aware — a queued write
+  shows "Waiting — n queued" with a distinct clock icon/color instead of the
+  idle "Saved" copy, driven by live `syncQueue` state, and the offline pill
+  surfaces the queued count even while the browser reports online.
 * Queued items do NOT auto-flush on backend recovery — flush only fires on
   browser `online` events or continued typing. A user who idles post-outage
   keeps the item queued until reload/reconnect flap.

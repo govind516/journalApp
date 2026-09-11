@@ -39,7 +39,10 @@ export default function Onboarding() {
         </div>
       </div>
       <div className="mt-5 flex items-center justify-between">
-        <div className="flex gap-1.5" data-testid="onboarding-dots">{steps.map((_, i) => <span key={i} className={`size-1.5 rounded-full ${i === step ? "bg-[var(--terracotta)]" : "bg-[var(--line-strong)]"}`} />)}</div>
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="sm" onClick={finish} data-testid="onboarding-skip-button">Skip tour</Button>
+          <div className="flex gap-1.5" data-testid="onboarding-dots">{steps.map((_, i) => <span key={i} className={`size-1.5 rounded-full ${i === step ? "bg-[var(--terracotta)]" : "bg-[var(--line-strong)]"}`} />)}</div>
+        </div>
         {step < steps.length - 1
           ? <Button onClick={() => setStep((s) => s + 1)} data-testid="onboarding-next-button">Continue <ArrowRight size={15} /></Button>
           : <Button onClick={finish} data-testid="onboarding-begin-button">Begin today’s page</Button>}
