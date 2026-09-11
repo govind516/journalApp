@@ -46,6 +46,18 @@ There is no cache, queue, or second database in the MVP. No Redis.
 
 Auth is cookie-based; every request carries `journal_session`. No `Authorization: Bearer` header.
 
+## Rate limiting (auth endpoints)
+
+`filter/AuthRateLimitFilter.java` (runs ahead of `SessionAuthFilter`) + `service/AuthRateLimiter.java` (Bucket4j, in-memory):
+
+| Endpoint | Key | Budget |
+|----------|-----|--------|
+| `POST /api/auth/login` | client IP | 10/min |
+| `POST /api/auth/login` | email (`strip().toLowerCase()`, same as `AuthService`) | 10/min |
+| `POST /api/auth/signup` | client IP | 10/hour |
+
+Over budget → `429` with the standard `ApiError` body and a `Retry-After` header, identical regardless of whether the attempt would have succeeded. `X-Forwarded-For` is honored only when `app.trust-proxy=true` (default `false`). Caveats: buckets live in JVM memory — **state resets on restart and is not shared across replicas**; horizontal scale requires a shared store (new ADR).
+
 ## What we removed (old stack) and why
 
 The previous committed generation used MongoDB + Redis + Kafka + JWT + Google OAuth + browser E2EE. None of that exists in the current tree, and docs must not reference it as current.
@@ -53,7 +65,7 @@ The previous committed generation used MongoDB + Redis + Kafka + JWT + Google OA
 | Removed | Why (MVP) |
 |---------|-----------|
 | **MongoDB (Atlas)** | Relational model (users/entries/sessions/reminders) fits Postgres + JPA; one database to operate, `ddl-auto=update` for local dev. Revisit only with a document-scale justification. |
-| **Redis (Upstash)** | Sessions live in the `sessions` table; no cache/rate-limit needs at MVP scale. Explicitly Postgres-only per product decision — do not add `spring-data-redis` or compose services speculatively. |
+| **Redis (Upstash)** | Sessions live in the `sessions` table; the only rate limiting is in-memory buckets (see above). Explicitly Postgres-only per product decision — do not add `spring-data-redis` or compose services speculatively. |
 | **Kafka (Aiven)** | No async pipeline in MVP; reminders/insights run in-process via `ReminderService`/`InsightsService`. Revisit on real throughput needs. |
 | **JWT (stateless)** | Replaced by revocable DB sessions (`Session.expiresAt`, `deleteByToken/UserId`). Simpler logout + account-delete semantics; cost is one session lookup per request. |
 | **Google OAuth** | Removed to shrink auth surface; email+password via `PasswordService` only. Revisit with a full OAuth threat/CORS review. |
