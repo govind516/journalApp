@@ -75,5 +75,32 @@ services:
     depends_on:
       - backend
 
+  # Nightly pg_dump loop (same image as the DB, so pg_dump always matches
+  # the server). First backup runs immediately on start, then every
+  # BACKUP_INTERVAL_SECONDS (default 24h). Artifacts live on the
+  # journal_backups volume — never in ephemeral container storage.
+  db-backup:
+    image: postgres:16-alpine
+    container_name: journal-db-backup
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      PGHOST: postgres
+      PGUSER: ${DB_USER:-journal}
+      PGPASSWORD: ${DB_PASSWORD:-journal}
+      PGDATABASE: ${DB_NAME:-journaldb}
+      BACKUP_DIR: /backups
+      BACKUP_RETENTION_DAYS: ${BACKUP_RETENTION_DAYS:-7}
+      BACKUP_INTERVAL_SECONDS: ${BACKUP_INTERVAL_SECONDS:-86400}
+    volumes:
+      - ./scripts:/scripts:ro
+      - journal_backups:/backups
+    command: ["sh", "-c", "while true; do /scripts/backup-db.sh; sleep $${BACKUP_INTERVAL_SECONDS:-86400}; done"]
+
 volumes:
   journal_pg_data:
+  journal_backups:

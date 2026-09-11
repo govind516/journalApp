@@ -26,6 +26,17 @@ import com.journal.model.Entry;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.EntityManager;
 
+/**
+ * Per-user encrypted entry exports (AES-GCM zips).
+ *
+ * @deprecated Superseded by the {@code db-backup} compose service, which
+ * takes full-fidelity pg_dump snapshots on a persistent volume. This class
+ * only ever exported entries (no users/sessions), wrote into ephemeral
+ * container storage, and has no restore path — it protects nothing as a
+ * disaster-recovery mechanism. Kept (disabled without a passphrase) until
+ * a deliberate removal; do not build on it.
+ */
+@Deprecated
 @Service
 public class BackupService {
 

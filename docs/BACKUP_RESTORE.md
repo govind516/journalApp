@@ -1,5 +1,23 @@
 # Backup & restore runbook (verified 2026-09-12)
 
+## Automated backups (current)
+
+The `db-backup` compose service (`scripts/backup-db.sh` on the
+`postgres:16-alpine` image, so `pg_dump` always matches the server):
+
+* First dump runs immediately on start, then every
+  `BACKUP_INTERVAL_SECONDS` (default 86400 — daily-ish, interval-based
+  rather than wall-clock).
+* Same verified invocation as the manual drill: `pg_dump --no-owner`.
+* Artifacts: timestamped `journal-YYYYMMDD-HHMMSS.sql` on the persistent
+  `journal_backups` volume (survives container recreation).
+* Retention: `BACKUP_RETENTION_DAYS` (default 7) — older dumps auto-deleted.
+* Failure: distinct `[backup] ERROR` log lines + nonzero exit, visible in
+  `docker compose logs db-backup`; the loop continues on the next interval.
+* Verified live: artifact content-checked (schema + data present), retention
+  proven by planting a year-2000 file (deleted) while fresh dumps survived,
+  failure path proven against a bogus host (loud ERROR, exit 1).
+
 ## What actually protects data today
 
 **`pg_dump` of the `journaldb` database — full fidelity** (users, entries,
@@ -63,8 +81,8 @@ docker compose up -d backend frontend
 * Nothing was documented before this drill — the procedure above was
   reverse-engineered from the compose setup and verified live here.
 
-## Still manual (script on next pass)
+## Still manual
 
-Fingerprinting, dump rotation/retention, off-host copy of artifacts, and
-the restore verification queries are all hand-run. A `scripts/` backup job
-(scheduled dump + retention + alert on failure) is the natural follow-up.
+Off-host copy of artifacts and failure alerting beyond log lines are still
+hand-run. Fingerprinting and the restore verification queries above remain
+the incident-time checklist.
