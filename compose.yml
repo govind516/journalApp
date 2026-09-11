@@ -1,0 +1,73 @@
+# JournalApp root composition (Postgres-only MVP — no Redis).
+#
+# Usage:
+#   docker compose config        # validate + render interpolation (no containers)
+#   docker compose up --build    # start postgres + backend + frontend
+#
+# Optional local overrides via a root .env file (gitignored, never commit).
+# Compose loads .env automatically for ${...} interpolation below, and the
+# postgres/backend services also read it via env_file if present. Build one
+# from the per-package examples:
+#   DB_NAME=journaldb
+#   DB_USER=journal
+#   DB_PASSWORD=journal
+#   VITE_API_BASE_URL=http://localhost:8000
+# (see backend/.env.example and frontend/.env.example for documented values)
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: journal-postgres-app
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      POSTGRES_DB: ${DB_NAME:-journaldb}
+      POSTGRES_USER: ${DB_USER:-journal}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-journal}
+    volumes:
+      - journal_pg_data:/var/lib/postgresql/data
+    # ports:
+    #   - "5432:5432"  # uncomment for local psql access
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-journal}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: journal-backend
+    env_file:
+      - path: .env
+        required: false
+    ports:
+      - "8000:8000"
+    environment:
+      DB_HOST: postgres
+      DB_NAME: ${DB_NAME:-journaldb}
+      DB_USER: ${DB_USER:-journal}
+      DB_PASSWORD: ${DB_PASSWORD:-journal}
+      APP_CORS_ORIGINS: http://localhost:3000,http://localhost:5173
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # Resolved from shell env or root .env (compose loads it
+        # automatically for interpolation); baked in at image build time.
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8000}
+    container_name: journal-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+volumes:
+  journal_pg_data:
