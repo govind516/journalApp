@@ -12,6 +12,13 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    // Dev parity for the no-risk headers only — no CSP here (it would
+    // fight HMR); the full policy lives in nginx.conf for prod builds.
+    headers: {
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "DENY",
+      "Referrer-Policy": "no-referrer",
+    },
     proxy: {
       // The backend already serves everything under /api, so during local dev
       // Vite just forwards it. In production, set VITE_API_BASE_URL instead

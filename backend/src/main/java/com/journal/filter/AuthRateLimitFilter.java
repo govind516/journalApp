@@ -33,7 +33,8 @@ import java.util.Optional;
  * path passes through untouched.
  */
 @Component
-@Order(Ordered.HIGHEST_PRECEDENCE)
+// One step behind SecurityHeadersFilter so rejected (429) responses still carry security headers.
+@Order(Ordered.HIGHEST_PRECEDENCE + 1)
 public class AuthRateLimitFilter extends OncePerRequestFilter {
 
     static final String LOGIN_PATH = "/api/auth/login";

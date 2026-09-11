@@ -58,6 +58,10 @@ Auth is cookie-based; every request carries `journal_session`. No `Authorization
 
 Over budget → `429` with the standard `ApiError` body and a `Retry-After` header, identical regardless of whether the attempt would have succeeded. `X-Forwarded-For` is honored only when `app.trust-proxy=true` (default `false`). Caveats: buckets live in JVM memory — **state resets on restart and is not shared across replicas**; horizontal scale requires a shared store (new ADR).
 
+### Open hardening follow-ups
+
+* **CSP `connect-src` (phase 2):** the nginx Report-Only policy leaves `connect-src` unrestricted because the prod API origin is only known at frontend build time. Tightening it needs build-time origin templating (e.g. an nginx entrypoint envsubst step); flip Report-Only to enforcing only after clean browser-console verification across all pages.
+
 ## What we removed (old stack) and why
 
 The previous committed generation used MongoDB + Redis + Kafka + JWT + Google OAuth + browser E2EE. None of that exists in the current tree, and docs must not reference it as current.
