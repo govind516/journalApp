@@ -61,6 +61,7 @@ Over budget → `429` with the standard `ApiError` body and a `Retry-After` head
 ### Open hardening follow-ups
 
 * **CSP `connect-src` (phase 2):** the nginx Report-Only policy leaves `connect-src` unrestricted because the prod API origin is only known at frontend build time. Tightening it needs build-time origin templating (e.g. an nginx entrypoint envsubst step); flip Report-Only to enforcing only after clean browser-console verification across all pages.
+* **Signup enumeration (accepted, low severity):** `POST /api/auth/signup` returns `409 "An account with that email already exists"` for registered addresses — a confirmed, deliberate finding, not an oversight. Accepted as-is: the disclosed fact (an email has an account here) is low-sensitivity, and neutralizing it now would dead-end legitimate users (a mistaken signup instead of login gets actionable feedback today; a generic "check email" response would promise a reset flow that doesn't exist). Revisit trigger: when a password-reset/forgot-password flow is built, make it generic-from-day-one and reconsider neutralizing signup's 409 at the same time, so both flows land consistent together. For completeness: login is already uniform (identical 401 both ways), so the asymmetry is signup-only, not app-wide.
 
 ## What we removed (old stack) and why
 
