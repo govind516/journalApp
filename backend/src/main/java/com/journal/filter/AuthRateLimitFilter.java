@@ -90,23 +90,8 @@ public class AuthRateLimitFilter extends OncePerRequestFilter {
         response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setHeader("Retry-After", String.valueOf(wait.get().toSeconds()));
-        setCorsHeaders(request, response);
+        SecurityHeadersFilter.addCorsEcho(request, response, corsOrigins);
         MAPPER.writeValue(response.getWriter(), new ApiError("Too many attempts, please try again later"));
-    }
-
-    private void setCorsHeaders(HttpServletRequest request, HttpServletResponse response) {
-        String origin = request.getHeader("Origin");
-        if (origin == null) {
-            return;
-        }
-        for (String allowed : corsOrigins.split(",")) {
-            if (allowed.strip().equals(origin)) {
-                response.setHeader("Access-Control-Allow-Origin", origin);
-                response.setHeader("Vary", "Origin");
-                response.setHeader("Access-Control-Allow-Credentials", "true");
-                return;
-            }
-        }
     }
 
     static String requestPath(HttpServletRequest request) {

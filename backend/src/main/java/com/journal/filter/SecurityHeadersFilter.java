@@ -32,4 +32,26 @@ public class SecurityHeadersFilter extends OncePerRequestFilter {
         }
         chain.doFilter(request, response);
     }
+
+    /**
+     * Echoes CORS headers for a request the filter chain is about to reject.
+     * Spring's own CORS handling only runs for requests that reach the
+     * dispatcher, so rejections written directly here would otherwise be
+     * unreadable cross-origin (browsers hide them as generic network errors).
+     * Only exact allowlist matches are echoed — never open reflection.
+     */
+    static void addCorsEcho(HttpServletRequest request, HttpServletResponse response, String allowedOriginsCsv) {
+        String origin = request.getHeader("Origin");
+        if (origin == null) {
+            return;
+        }
+        for (String allowed : allowedOriginsCsv.split(",")) {
+            if (allowed.strip().equals(origin)) {
+                response.setHeader("Access-Control-Allow-Origin", origin);
+                response.setHeader("Vary", "Origin");
+                response.setHeader("Access-Control-Allow-Credentials", "true");
+                return;
+            }
+        }
+    }
 }
