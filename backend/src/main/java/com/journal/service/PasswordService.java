@@ -27,6 +27,9 @@ public class PasswordService {
     }
 
     public boolean verify(String password, String encoded) {
+        if (password == null || encoded == null) {
+            return false;
+        }
         try {
             String[] parts = encoded.split("\\$", 2);
             if (parts.length != 2) return false;

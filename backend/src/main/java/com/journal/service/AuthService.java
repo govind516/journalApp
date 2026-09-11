@@ -16,12 +16,22 @@ import java.security.SecureRandom;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
 public class AuthService {
 
     public static final int SESSION_DAYS = 30;
+
+    /**
+     * Timing ballast, not a secret: a well-formed hash run through the real
+     * verify path when no account exists, so a missing account costs the same
+     * PBKDF2 work as a wrong password. Never rotate or treat as sensitive —
+     * its value is irrelevant, only its cost matters.
+     */
+    private static final String DUMMY_HASH =
+            "18a69cb1c8dadd1033bef80a15db5a85$507459429787b17f1431280dc801cf76d2dd54d088243b883c6996938cc89ceb";
 
     private final UserRepository userRepository;
     private final SessionRepository sessionRepository;
@@ -53,9 +63,16 @@ public class AuthService {
 
     public User login(LoginRequest request) {
         String email = request.getEmail() == null ? "" : request.getEmail().strip().toLowerCase();
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ApiException(HttpStatus.UNAUTHORIZED.value(), "Email or password not recognised"));
-        if (!passwordService.verify(request.getPassword(), user.getPasswordHash())) {
+        String supplied = request.getPassword();
+        Optional<User> maybeUser = userRepository.findByEmail(email);
+        if (maybeUser.isEmpty()) {
+            // Same work as the wrong-password path below: one lookup (above)
+            // plus one full verify. Result discarded.
+            passwordService.verify(supplied, DUMMY_HASH);
+            throw new ApiException(HttpStatus.UNAUTHORIZED.value(), "Email or password not recognised");
+        }
+        User user = maybeUser.get();
+        if (!passwordService.verify(supplied, user.getPasswordHash())) {
             throw new ApiException(HttpStatus.UNAUTHORIZED.value(), "Email or password not recognised");
         }
         return user;
