@@ -34,6 +34,17 @@ cp .env.example .env
 
 `nginx.conf` serves `dist/` as an SPA (`try_files ... /index.html`). The commented `/api/` `proxy_pass` block is an optional alternative to `VITE_API_BASE_URL` when frontend and backend share a compose network — see `docs/DEPLOYMENT.md`.
 
+## Regenerating API types
+
+Backend types are generated from the live OpenAPI spec (dev profile only — docs are disabled in prod):
+
+```bash
+# backend must be running locally first (dev profile, serves /api-docs)
+npm run codegen   # -> src/api/generated/schema.d.ts (openapi-typescript)
+```
+
+Re-run whenever backend DTOs or endpoints change and commit the regenerated file with the backend change. The generated types are not yet wired into `src/lib/api.ts` or components — that migration is a separate task.
+
 ## Seeding demo data
 
 ```bash
