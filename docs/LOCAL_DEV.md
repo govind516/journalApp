@@ -9,9 +9,12 @@ Postgres-only. No Redis to start.
 ## 1. Start Postgres
 
 ```bash
-docker compose -f backend/docker-compose.yml up -d
-docker compose -f backend/docker-compose.yml ps   # journal-postgres on 5432
+# from repo root
+docker compose up -d postgres   # journal-postgres-app (pg16, no host port by default)
+docker compose ps
 ```
+
+Backend and tests default to `localhost:5432`, so for backend-only iteration first uncomment the `ports` mapping in `compose.yml` (`5432:5432`, marked "uncomment for local psql access") and re-run the command above. Full-stack runs (`docker compose up --build`, frontend on `:3000`) don't need the host port.
 
 Defaults match `backend/src/main/resources/application.properties`: db `journaldb`, user/password `journal`/`journal`. To override: `DB_HOST / DB_NAME / DB_USER / DB_PASSWORD` in the backend process env.
 
@@ -57,7 +60,7 @@ cd frontend && npm run build   # tsc + vite, catches type errors CI would catch
 
 | Symptom | Fix |
 |---------|-----|
-| `Connection to localhost:5432 refused` | `docker compose -f backend/docker-compose.yml up -d`; check `DB_HOST` (hostname only, port fixed in JDBC URL). |
+| `Connection to localhost:5432 refused` | `docker compose up -d postgres` from root (uncomment the `ports` mapping in `compose.yml` first — backend/tests need host access); check `DB_HOST` (hostname only, port fixed in JDBC URL). |
 | `Build requires JDK 21` (enforcer) | `export JAVA_HOME=<jdk-21>`; `java -version` must be 21.x. |
 | Frontend `Failed to fetch /api/*` | Backend not on `8000`, or `VITE_API_BASE_URL` set to a stale origin — unset it for proxy mode. |
 | `401` on every page after login | Cookies blocked (private window / cross-origin without backend CORS for that origin). Keep dev on `localhost:5173` (allowed by default). |
