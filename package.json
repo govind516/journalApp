@@ -1,0 +1,14 @@
+{
+  "name": "journalapp-tooling",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Repo-level tooling (commit hooks, lint config) — backend and frontend live in their own packages.",
+  "scripts": {
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^20.0.0",
+    "@commitlint/config-conventional": "^20.0.0",
+    "husky": "^9.0.0"
+  }
+}
