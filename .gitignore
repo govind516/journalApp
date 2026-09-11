@@ -1,5 +1,8 @@
-HELP.md
+### Java / Spring ###
+*.log
+/htmlReport
 target/
+backend/target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
@@ -12,10 +15,6 @@ target/
 .settings
 .springBeans
 .sts4-cache
-
-### Java / Spring ###
-*.log
-/htmlReport
 
 ### IntelliJ IDEA ###
 .idea
@@ -38,8 +37,15 @@ build/
 
 ### Environment ###
 *.env
+!*.env.example
 
 ### Node / React ###
-client/node_modules/
-client/dist/
-client/.env*
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/*.local
+frontend/logs/
+npm-debug.log*
+
+### OS ###
+.DS_Store
