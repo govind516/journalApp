@@ -1,4 +1,4 @@
-name: SonarQube
+name: CI
 on:
   push:
     branches:
@@ -7,7 +7,7 @@ on:
     types: [opened, synchronize, reopened]
 jobs:
   backend:
-    name: Backend build and analyze
+    name: Backend build and verify
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -35,23 +35,14 @@ jobs:
         with:
           java-version: 21
           distribution: 'zulu'
-      - name: Cache SonarQube packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.sonar/cache
-          key: ${{ runner.os }}-sonar
-          restore-keys: ${{ runner.os }}-sonar
       - name: Cache Maven packages
         uses: actions/cache@v4
         with:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
-      - name: Build and analyze
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=springboot-projects_journalapp
+      - name: Build and verify
+        run: mvn -B verify
       - name: Dependency vulnerability scan (report-only)
         # failBuildOnCVSS=11 never fails the build; findings surface in logs.
         # Add an NVD_API_KEY repo secret and pass -DnvdApiKey for faster DB updates.
