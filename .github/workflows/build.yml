@@ -38,6 +38,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=springboot-projects_journalapp
+      - name: Dependency vulnerability scan (report-only)
+        # failBuildOnCVSS=11 never fails the build; findings surface in logs.
+        # Add an NVD_API_KEY repo secret and pass -DnvdApiKey for faster DB updates.
+        run: mvn -B org.owasp:dependency-check-maven:12.1.3:check -DfailBuildOnCVSS=11
+        continue-on-error: true
   frontend:
     name: Frontend build and test
     runs-on: ubuntu-latest
@@ -56,5 +61,9 @@ jobs:
         run: npm ci
       - name: Test
         run: npm test
+      - name: Dependency audit (report-only)
+        # continue-on-error keeps this informational until the baseline is clean.
+        run: npm audit --audit-level=high
+        continue-on-error: true
       - name: Build
         run: npm run build
