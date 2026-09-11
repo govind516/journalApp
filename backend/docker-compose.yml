@@ -1,0 +1,16 @@
+version: "3.9"
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: journal-postgres
+    environment:
+      POSTGRES_DB: ${DB_NAME:-journaldb}
+      POSTGRES_USER: ${DB_USER:-journal}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-journal}
+    ports:
+      - "5432:5432"
+    volumes:
+      - journal_pg_data:/var/lib/postgresql/data
+
+volumes:
+  journal_pg_data:
