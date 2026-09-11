@@ -65,3 +65,15 @@ cd frontend && npm run build   # tsc + vite, catches type errors CI would catch
 | Frontend `Failed to fetch /api/*` | Backend not on `8000`, or `VITE_API_BASE_URL` set to a stale origin — unset it for proxy mode. |
 | `401` on every page after login | Cookies blocked (private window / cross-origin without backend CORS for that origin). Keep dev on `localhost:5173` (allowed by default). |
 | Stale `dist/` served | `npm run build` after pulling; `npm run preview` only serves last build. |
+
+## Testcontainers + Docker Engine note (one-time per machine)
+
+Symptom: Testcontainers-backed tests fail locally during Docker API negotiation (HTTP 400) — the Boot-managed client speaks an API version this machine's Engine (Docker 29, API 1.54) rejects.
+
+Fix (machine-local, outside the repo — do once, not per clone/branch):
+
+```bash
+printf 'api.version=1.44\n' > ~/.docker-java.properties
+```
+
+CI runners (Ubuntu, compatible Engine) are unaffected and need no changes. Without the file, the container tests skip cleanly (`disabledWithoutDocker`) instead of failing.
