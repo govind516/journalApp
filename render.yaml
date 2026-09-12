@@ -1,8 +1,8 @@
-# Render blueprint: backend API + managed Postgres.
-#
-# Apply from the Render dashboard (Blueprints → New → repo) and review the
-# plan preview before confirming. No secrets live in this file — values
-# marked `sync: false` are entered in the dashboard per DEPLOY.md.
+# Render blueprint: backend API only. The database is Supabase (session
+# pooler), managed outside Render — so this file defines no `databases`
+# resource. Apply from the Render dashboard (Blueprints → New → repo) and
+# review the plan preview before confirming. No secrets live in this file —
+# values marked `sync: false` are entered in the dashboard per DEPLOY.md.
 #
 # Image tags: `latest` floats with master. To pin a release instead, replace
 # the url with ghcr.io/govind516/journalapp-backend:sha-<full-commit-sha>
@@ -21,32 +21,16 @@ services:
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: prod
-      - key: DB_HOST
-        fromDatabase:
-          name: journaldb
-          property: host
-      - key: DB_NAME
-        fromDatabase:
-          name: journaldb
-          property: databaseName
-      - key: DB_USER
-        fromDatabase:
-          name: journaldb
-          property: user
-      - key: DB_PASSWORD
-        fromDatabase:
-          name: journaldb
-          property: password
+      # Supabase session pooler (same values as local backend/.env).
+      # sslmode=require is mandatory; pooler user is postgres.<project-ref>.
+      - key: SPRING_DATASOURCE_URL
+        sync: false
+      - key: SPRING_DATASOURCE_USERNAME
+        sync: false
+      - key: SPRING_DATASOURCE_PASSWORD
+        sync: false
       # Set by hand in the dashboard (see DEPLOY.md two-pass wiring).
       - key: APP_CORS_ORIGINS_PROD
         sync: false
       - key: REMINDER_SIGNING_SECRET
         sync: false
-
-databases:
-  - name: journaldb
-    databaseName: journaldb
-    user: journal
-    # Adjust plan/region to taste in the dashboard preview.
-    plan: basic
-    region: oregon
