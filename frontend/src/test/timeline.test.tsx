@@ -55,6 +55,22 @@ describe("Timeline", () => {
     );
     expect(await screen.findByTestId("timeline-empty-state")).toBeInTheDocument();
   });
+
+  it("marks year boundaries across history", async () => {
+    renderTimeline();
+    await screen.findByTestId("timeline-entry-entry-1");
+    expect(screen.getByTestId("timeline-year-2026")).toHaveTextContent("2026");
+    expect(screen.getByTestId("timeline-year-2025")).toHaveTextContent("2025");
+  });
+
+  it("renders entries as borderless rows linking to the entry", async () => {
+    renderTimeline();
+    const row = await screen.findByTestId("timeline-entry-entry-1");
+    expect(row.tagName).toBe("A");
+    expect(row.getAttribute("href")).toBe("/app/entry/entry-1");
+    expect(row.className).not.toContain("rounded-3xl");
+    expect(row.className).toContain("border-b");
+  });
 });
 
 describe("Calendar", () => {
