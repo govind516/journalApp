@@ -24,6 +24,7 @@ describe("Ask My Journal", () => {
     await user.click(screen.getByTestId("ask-submit-button"));
     expect(await screen.findByTestId("ask-answer-card")).toBeInTheDocument();
     expect(screen.getByTestId("ask-answer")).toHaveTextContent("brightest");
+    expect(screen.getByTestId("ask-sources-heading")).toHaveTextContent("From your pages");
     const link = screen.getByTestId("ask-entry-entry-1");
     expect(link.getAttribute("href")).toBe("/app/entry/entry-1");
     expect(screen.getByTestId("ask-source-note")).toHaveTextContent("nothing was sent anywhere");
