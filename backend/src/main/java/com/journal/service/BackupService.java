@@ -16,15 +16,11 @@ import java.io.*;
 import java.nio.file.*;
 import java.security.*;
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import com.journal.repository.EntryRepository;
 import com.journal.model.Entry;
-
-import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.EntityManager;
 
 /**
  * Per-user encrypted entry exports (AES-GCM zips).

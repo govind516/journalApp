@@ -3,16 +3,12 @@ package com.journal.service;
 import io.sentry.Hint;
 import io.sentry.Sentry;
 import io.sentry.SentryEvent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.regex.Pattern;
 
 @Component
 public class SentryScrubber {
-
-    private static final Logger log = LoggerFactory.getLogger(SentryScrubber.class);
 
 // Short-sensitive values: pin, password; also entry content/tags/mood
     // (length check dropped — recognized field names redact regardless of value)

@@ -1,7 +1,6 @@
 package com.journal.filter;
 
 import com.journal.model.Session;
-import com.journal.model.User;
 import com.journal.repository.SessionRepository;
 import com.journal.repository.UserRepository;
 import com.journal.service.AuthService;

@@ -38,7 +38,6 @@ public class ReflectionService {
         if (yearMonth == null || !yearMonth.matches("\\d{4}-\\d{2}")) {
             throw new ApiException(HttpStatus.BAD_REQUEST.value(), "Use a valid YYYY-MM month");
         }
-        int year = Integer.parseInt(yearMonth.substring(0, 4));
         int month = Integer.parseInt(yearMonth.substring(5, 7));
         if (month < 1 || month > 12) {
             throw new ApiException(HttpStatus.BAD_REQUEST.value(), "Use a valid YYYY-MM month");

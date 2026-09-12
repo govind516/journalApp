@@ -1,7 +1,6 @@
 package com.journal.controller;
 
 import com.journal.dto.*;
-import com.journal.model.User;
 import com.journal.service.EntryService;
 import com.journal.util.CurrentUserHolder;
 import jakarta.validation.Valid;
