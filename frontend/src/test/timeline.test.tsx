@@ -70,6 +70,21 @@ describe("Calendar", () => {
     await waitFor(() => expect(screen.getByTestId("calendar-written-count")).toHaveTextContent("3 written days"));
     expect(screen.getByTestId("calendar-year-label")).toHaveTextContent(String(new Date().getFullYear()));
   });
+
+  it("shows a guided caption for an empty year", async () => {
+    renderApp(
+      <Routes>
+        <Route path="/app/calendar" element={<Calendar />} />
+      </Routes>,
+      "/app/calendar",
+      "user-1",
+      (db) => { db.entries = []; }
+    );
+    expect(await screen.findByTestId("calendar-month-9")).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByTestId("calendar-written-count")).toHaveTextContent("0 written days"));
+    expect(screen.getByTestId("calendar-empty-caption")).toBeInTheDocument();
+    expect(screen.getByTestId("calendar-empty-action").getAttribute("href")).toBe("/app");
+  });
 });
 
 describe("Offline state", () => {

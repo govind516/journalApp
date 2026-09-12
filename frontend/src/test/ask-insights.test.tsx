@@ -74,4 +74,18 @@ describe("Insights", () => {
     await user.click(screen.getByTestId("reflection-prev-month"));
     await waitFor(() => expect(screen.getByTestId("reflection-month-label").textContent).not.toBe(before));
   });
+
+  it("shows a guided banner for zero entries", async () => {
+    renderApp(
+      <Routes>
+        <Route path="/app/insights" element={<Insights />} />
+        <Route path="/app/entry/:id" element={<div data-testid="entry-stub">entry</div>} />
+      </Routes>,
+      "/app/insights",
+      "user-1",
+      (db) => { db.entries = []; }
+    );
+    expect(await screen.findByTestId("insights-empty-state")).toBeInTheDocument();
+    expect(screen.getByTestId("insights-empty-action").getAttribute("href")).toBe("/app");
+  });
 });
