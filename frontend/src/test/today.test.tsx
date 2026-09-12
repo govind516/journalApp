@@ -4,6 +4,8 @@ import { describe, expect, it } from "vitest";
 import { HttpResponse, delay, http } from "msw";
 import { Route, Routes } from "react-router-dom";
 import Today from "@/pages/Today";
+import CommandPalette from "@/components/CommandPalette";
+import { setCommandPalette, useCommandPalette } from "@/lib/commandPalette";
 import { renderApp } from "./utils";
 import { server } from "./server";
 import { TODAY } from "./handlers";
@@ -129,5 +131,34 @@ describe("Today editor", () => {
     const editor = await screen.findByTestId("today-editor-textarea");
     await waitFor(() => expect((editor as HTMLTextAreaElement).value).toContain("kitchen floor"));
     expect(screen.getByTestId("today-reflection-copy")).toHaveTextContent("keeping the rhythm");
+  });
+
+  it("search signpost opens the command palette", async () => {
+    const user = userEvent.setup();
+    function PaletteHarness() {
+      const open = useCommandPalette();
+      return (
+        <>
+          <Today />
+          <CommandPalette open={open} onClose={() => setCommandPalette(false)} onGo={() => {}} onLock={() => {}} />
+        </>
+      );
+    }
+    renderApp(<PaletteHarness />, "/app");
+    const editor = await screen.findByTestId("today-editor-textarea");
+    await waitFor(() => expect((editor as HTMLTextAreaElement).value).toContain("kitchen floor"));
+    expect(screen.queryByTestId("command-palette")).not.toBeInTheDocument();
+    await user.click(screen.getByTestId("editor-search-button"));
+    expect(await screen.findByTestId("command-palette")).toBeInTheDocument();
+  });
+
+  it("Escape leaves focus mode", async () => {
+    const user = userEvent.setup();
+    renderToday();
+    await screen.findByTestId("today-editor-textarea");
+    await user.click(screen.getByTestId("focus-mode-toggle"));
+    expect(screen.getByTestId("focus-mode-toggle")).toHaveAttribute("aria-pressed", "true");
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(screen.getByTestId("focus-mode-toggle")).toHaveAttribute("aria-pressed", "false");
   });
 });

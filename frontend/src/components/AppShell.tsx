@@ -27,20 +27,28 @@ import PageFade from "@/components/PageFade";
 import { fetchMe, signOut } from "@/lib/session";
 import { getPinHash, isUnlocked, lockNow } from "@/lib/lock";
 import { flushQueue, queuedCount, subscribeQueue } from "@/lib/syncQueue";
+import { setCommandPalette, useCommandPalette } from "@/lib/commandPalette";
+import { useFocusMode } from "@/lib/focusMode";
 import { useTheme } from "@/lib/theme";
 
-const navigation = [
-  { to: "/app", label: "Today", icon: PenLine, end: true, testId: "nav-today-link" },
-  { to: "/app/timeline", label: "Timeline", icon: Clock3, end: false, testId: "nav-timeline-link" },
-  { to: "/app/calendar", label: "Calendar", icon: CalendarDays, end: false, testId: "nav-calendar-link" },
-  { to: "/app/ask", label: "Ask", icon: BookHeart, end: false, testId: "nav-ask-link" },
-  { to: "/app/insights", label: "Insights", icon: LineChart, end: false, testId: "nav-insights-link" },
+const navigationGroups = [
+  { label: "Write", items: [{ to: "/app", label: "Today", icon: PenLine, end: true, testId: "nav-today-link" }] },
+  { label: "Remember", items: [
+    { to: "/app/timeline", label: "Timeline", icon: Clock3, end: false, testId: "nav-timeline-link" },
+    { to: "/app/calendar", label: "Calendar", icon: CalendarDays, end: false, testId: "nav-calendar-link" },
+  ] },
+  { label: "Understand", items: [
+    { to: "/app/ask", label: "Ask", icon: BookHeart, end: false, testId: "nav-ask-link" },
+    { to: "/app/insights", label: "Insights", icon: LineChart, end: false, testId: "nav-insights-link" },
+  ] },
 ];
+
+const navigation = navigationGroups.flatMap((group) => group.items);
 
 export default function AppShell() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [locked, setLocked] = useState(false);
-  const [paletteOpen, setPaletteOpen] = useState(false);
+  const paletteOpen = useCommandPalette();
   const [online, setOnline] = useState(() => (typeof navigator === "undefined" ? true : navigator.onLine));
   const [queued, setQueued] = useState(() => queuedCount());
   const { data: user } = useQuery({ queryKey: ["me"], queryFn: fetchMe });
@@ -48,11 +56,14 @@ export default function AppShell() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const location = useLocation();
+  // Focus Mode recedes the chrome, but only where writing happens — navigating
+  // away restores navigation immediately, no toggle needed.
+  const chromeQuiet = useFocusMode() && location.pathname === "/app";
 
   useEffect(() => {
     const handleShortcut = (event: KeyboardEvent) => {      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
         event.preventDefault();
-        setPaletteOpen(true);
+        setCommandPalette(true);
         return;
       }
       if (event.key === "/" && document.activeElement?.tagName !== "TEXTAREA" && document.activeElement?.tagName !== "INPUT") {
@@ -112,12 +123,18 @@ export default function AppShell() {
 
   return (
     <div className="paper-noise min-h-svh bg-[var(--linen)] text-[var(--ink)]" data-testid="journal-app-shell">
-      <aside className="theme-overlay fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-[var(--line)] px-6 py-7 backdrop-blur-xl lg:flex" data-testid="desktop-sidebar">
+      <AnimatePresence initial={false}>
+      {(!chromeQuiet) && <motion.aside key="sidebar" exit={{ opacity: 0, x: -12 }} transition={{ duration: 0.25 }} className="theme-overlay fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-[var(--line)] px-6 py-7 backdrop-blur-xl lg:flex" data-testid="desktop-sidebar">
         <NavBrand />
         <div className="mt-14 flex flex-1 flex-col">
           <p className="eyebrow mb-4 px-3" data-testid="sidebar-navigation-label">Your journal</p>
-          <nav className="space-y-1" data-testid="desktop-navigation">
-            {navigation.map((item) => <NavigationItem key={item.to} {...item} pillId="nav-active-desktop" />)}
+          <nav className="space-y-4" data-testid="desktop-navigation">
+            {navigationGroups.map((group) => <div key={group.label}>
+              <p className="eyebrow mb-1 px-3" data-testid={`sidebar-chapter-${group.label.toLowerCase()}`}>{group.label}</p>
+              <div className="space-y-1">
+                {group.items.map((item) => <NavigationItem key={item.to} {...item} />)}
+              </div>
+            </div>)}
           </nav>
           <div className="mt-auto border-t border-[var(--line)] pt-5">
             <NavLink to="/app/settings" data-testid="nav-settings-link" className={({ isActive }) => navClass(isActive)}>
@@ -147,9 +164,10 @@ export default function AppShell() {
             <p className="truncate text-xs text-[var(--muted-ink)]" data-testid="sidebar-user-timezone">{user?.timezone ?? "Personal space"}</p>
           </div>
         </div>
-      </aside>
+      </motion.aside>}
+      </AnimatePresence>
 
-      <header className="theme-overlay sticky top-0 z-20 flex items-center justify-between border-b border-[var(--line)] px-5 py-4 backdrop-blur-xl lg:hidden" data-testid="mobile-header">
+      {!chromeQuiet && <header className="theme-overlay sticky top-0 z-20 flex items-center justify-between border-b border-[var(--line)] px-5 py-4 backdrop-blur-xl lg:hidden" data-testid="mobile-header">
         <NavBrand compact />
         <div className="flex items-center gap-1">
           <Button variant="ghost" size="icon" onClick={toggle} data-testid="mobile-theme-toggle-button" aria-label={theme === "dark" ? "Switch to daytime pages" : "Switch to lamplight pages"}>
@@ -159,18 +177,23 @@ export default function AppShell() {
             {menuOpen ? <X size={20} /> : <Menu size={20} />}
           </Button>
         </div>
-      </header>
+      </header>}
       <AnimatePresence initial={false}>
       {menuOpen && <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.22, ease: [0.22, 0.8, 0.24, 1] }} className="overflow-hidden border-b border-[var(--line)] bg-[var(--paper)] lg:hidden" data-testid="mobile-navigation-panel">
         <nav className="grid gap-1 px-5 py-4" data-testid="mobile-navigation">
-          {navigation.map((item) => <NavigationItem key={item.to} {...item} onNavigate={() => setMenuOpen(false)} />)}
+          {navigationGroups.map((group) => <div key={group.label}>
+            <p className="eyebrow mb-1 mt-4 px-3 first:mt-0" data-testid={`mobile-chapter-${group.label.toLowerCase()}`}>{group.label}</p>
+            <div className="space-y-1">
+              {group.items.map((item) => <NavigationItem key={item.to} {...item} onNavigate={() => setMenuOpen(false)} />)}
+            </div>
+          </div>)}
           <NavLink to="/app/settings" onClick={() => setMenuOpen(false)} data-testid="mobile-settings-link" className={({ isActive }) => navClass(isActive)}><Settings size={17} /> Settings</NavLink>
           <button className="nav-item" onClick={handleSignOut} data-testid="mobile-sign-out-button"><LogOut size={17} /> Sign out</button>
         </nav>
       </motion.div>}
       </AnimatePresence>
 
-      <main className="min-h-[calc(100svh-73px)] lg:ml-64" data-testid="journal-main-content">
+      <main className={`min-h-[calc(100svh-73px)] transition-[margin] duration-300 motion-reduce:transition-none ${chromeQuiet ? "lg:ml-0" : "lg:ml-64"}`} data-testid="journal-main-content">
         <AnimatePresence mode="wait" initial={false}>
           <PageFade key={location.pathname}>
             <Outlet />
@@ -178,7 +201,7 @@ export default function AppShell() {
         </AnimatePresence>
       </main>
       <div className="theme-card-overlay fixed right-5 bottom-5 hidden items-center gap-2 rounded-full border border-[var(--line)] px-3 py-2 text-xs text-[var(--muted-ink)] shadow-sm backdrop-blur-md xl:flex" data-testid="search-shortcut-hint">      <Search size={13} /> Press <kbd className="kbd">⌘ K</kbd> for commands</div>
-      <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} onGo={(to) => { setPaletteOpen(false); navigate(to); }} onLock={() => handleLockNow()} />
+      <CommandPalette open={paletteOpen} onClose={() => setCommandPalette(false)} onGo={(to) => { setCommandPalette(false); navigate(to); }} onLock={() => handleLockNow()} />
       <Onboarding />
       {(!online || queued > 0) && <div className="theme-card-overlay fixed bottom-5 left-1/2 z-40 -translate-x-1/2 rounded-full border border-[var(--line-strong)] px-4 py-2 text-xs font-semibold whitespace-nowrap max-sm:left-4 max-sm:right-4 max-sm:translate-x-0 max-sm:whitespace-normal max-sm:text-center text-[var(--ink-soft)] shadow-[var(--shadow-md)] backdrop-blur-md" role="status" data-testid="offline-pill">{!online ? (queued > 0 ? `You’re offline — ${queued} ${queued === 1 ? "page" : "pages"} waiting to save.` : "You’re offline — new words will keep, and save when you return.") : `Back online — ${queued} ${queued === 1 ? "page" : "pages"} waiting to save.`}</div>}
       <span className="sr-only" data-testid="current-route-label">{location.pathname}</span>
@@ -193,12 +216,9 @@ function NavBrand({ compact = false }: { compact?: boolean }) {
   </NavLink>;
 }
 
-function NavigationItem({ to, label, icon: Icon, end, testId, onNavigate, pillId }: { to: string; label: string; icon: LucideIcon; end: boolean; testId: string; onNavigate?: () => void; pillId?: string }) {
-  return <NavLink to={to} end={end} onClick={onNavigate} data-testid={testId} className={({ isActive }) => pillId ? `nav-item relative ${isActive ? "text-[var(--terracotta-deep)]" : ""}` : navClass(isActive)}>
-    {({ isActive }) => <>
-      {isActive && pillId && <motion.span layoutId={pillId} transition={{ type: "spring", stiffness: 420, damping: 34 }} className="absolute inset-0 rounded-xl bg-[var(--terracotta-soft)]" aria-hidden="true" />}
-      <span className="relative flex items-center gap-[11px]"><Icon size={17} strokeWidth={1.7} /> {label}</span>
-    </>}
+function NavigationItem({ to, label, icon: Icon, end, testId, onNavigate }: { to: string; label: string; icon: LucideIcon; end: boolean; testId: string; onNavigate?: () => void }) {
+  return <NavLink to={to} end={end} onClick={onNavigate} data-testid={testId} className={({ isActive }) => navClass(isActive)}>
+    <Icon size={17} strokeWidth={1.7} /> {label}
   </NavLink>;
 }
 

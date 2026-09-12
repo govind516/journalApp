@@ -196,12 +196,13 @@
 .field-label input, .field-label select { font-weight: 400; letter-spacing: 0; }
 .warm-select { height: 40px; width: 100%; border: 1px solid var(--line-strong); border-radius: 12px; background: var(--paper); padding: 0 12px; font-size: 14px; color: var(--ink-soft); outline: none; transition: border-color 180ms ease, box-shadow 180ms ease; }
 .warm-select:focus { border-color: var(--terracotta); box-shadow: 0 0 0 3px var(--terracotta-soft); }
-.nav-item { display: flex; align-items: center; gap: 11px; border-radius: 12px; padding: 10px 12px; color: var(--muted-ink); font-size: 13px; font-weight: 600; transition: color 180ms ease, background 180ms ease, transform 180ms ease; }
+.nav-item { position: relative; display: flex; align-items: center; gap: 11px; border-radius: 12px; padding: 10px 12px; color: var(--muted-ink); font-size: 13px; font-weight: 600; transition: color 180ms ease, background 180ms ease, transform 180ms ease; }
 .nav-item:hover { color: var(--ink); background: var(--sand); transform: translateX(2px); }
-.nav-item-active { color: var(--terracotta-deep); background: var(--terracotta-soft); }
+.nav-item-active { color: var(--terracotta-deep); background: transparent; }
+.nav-item-active::before { content: ""; position: absolute; left: 3px; top: 50%; width: 6px; height: 6px; margin-top: -3px; border-radius: 999px; background: var(--terracotta); }
 .mood-chip { display: inline-flex; align-items: center; gap: 5px; border: 1px solid var(--line); border-radius: 999px; background: var(--paper); padding: 6px 10px; font-size: 12px; color: var(--muted-ink); transition: border-color 180ms ease, background 180ms ease, transform 180ms ease; }
 .mood-chip:hover { border-color: var(--line-strong); transform: translateY(-1px); }
-.mood-chip-active { border-color: var(--terracotta); background: var(--terracotta-soft); color: var(--terracotta-deep); }
+.mood-chip-active { border-color: var(--terracotta); background: var(--terracotta-soft); color: var(--terracotta-deep); font-weight: 700; }
 .tag-chip, .tag-chip-static { display: inline-flex; align-items: center; gap: 5px; border-radius: 999px; background: var(--sand); padding: 5px 9px; font-size: 11px; color: var(--muted-ink); }
 .tag-chip button { display: inline-flex; color: var(--muted-ink); }
 .tag-input { width: 90px; border: 0; background: transparent; padding: 5px 4px; font-size: 12px; outline: none; }

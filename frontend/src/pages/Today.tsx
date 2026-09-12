@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useSearchParams } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
-import { Check, ChevronRight, Clock, Focus, Keyboard, Lightbulb, Minimize2, Plus, RotateCcw, Tag, X } from "lucide-react";
+import { Check, ChevronRight, Clock, Focus, Keyboard, Lightbulb, Minimize2, Plus, RotateCcw, Search, Tag, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,6 +11,8 @@ import { fetchMe } from "@/lib/session";
 import { fetchEntryByDate, fetchInsights, fetchMemory, fetchOnThisDay, fetchToday } from "@/lib/normalize";
 import { clearDraft, loadDraft, saveDraft, sweepStaleDrafts } from "@/lib/drafts";
 import { enqueueWrite, queuedCount, subscribeQueue } from "@/lib/syncQueue";
+import { setCommandPalette } from "@/lib/commandPalette";
+import { setFocusMode, useFocusMode } from "@/lib/focusMode";
 import EmberMark from "@/components/EmberMark";
 import { MOODS, moodLabel } from "@/lib/types";
 import type { Entry, EntryPayload, MemorySignal } from "@/lib/types";
@@ -57,18 +59,14 @@ export default function Today() {
   useEffect(() => subscribeQueue(() => setQueued(queuedCount())), []);
   const [promptIndex, setPromptIndex] = useState(() => new Date().getDate() % prompts.length);
   const [promptVisible, setPromptVisible] = useState(true);
-  const [focusMode, setFocusMode] = useState(() => { try { return window.localStorage.getItem("journal-focus") === "1"; } catch { return false; } });
+  const focusMode = useFocusMode();
+  const toggleFocus = () => setFocusMode(!focusMode);
   const [showShortcuts, setShowShortcuts] = useState(false);
   const [recoveredAt, setRecoveredAt] = useState<number | null>(null);
   const date = todayQuery.data?.date ?? requestedDate ?? "";
   const entry = todayQuery.data?.entry;
   const todayWritten = Boolean(entry?.content?.trim());
   const anniversaries = useQuery({ queryKey: ["on-this-day", date], queryFn: () => fetchOnThisDay(date), enabled: Boolean(date) });
-
-  const toggleFocus = () => setFocusMode((value) => {
-    try { window.localStorage.setItem("journal-focus", value ? "0" : "1"); } catch { /* private mode */ }
-    return !value;
-  });
 
   useEffect(() => {
     sweepStaleDrafts();
@@ -140,13 +138,17 @@ export default function Today() {
         if (event.key === "Escape") (document.activeElement as HTMLElement)?.blur();
         return;
       }
+      if (event.key === "Escape" && focusMode) {
+        toggleFocus();
+        return;
+      }
       if (event.key.toLowerCase() === "f") toggleFocus();
       if (event.key === "?") setShowShortcuts(true);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [date, content, mood, tags]);
+  }, [date, content, mood, tags, focusMode]);
 
   useEffect(() => {
     if (!dirty || !date) return;
@@ -186,7 +188,7 @@ export default function Today() {
       {recoveredAt && <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[var(--line-strong)] bg-[var(--terracotta-soft)] px-4 py-3 text-xs text-[var(--terracotta-deep)] sm:mb-6" data-testid="draft-recovered-note"><span>Welcome back — these unsent words were waiting for you.</span><button onClick={discardDraft} className="font-semibold underline underline-offset-4" data-testid="discard-draft-button">Discard them</button></div>}
       {!focusMode && promptVisible && <div className="mb-5 flex items-start gap-4 rounded-2xl border border-[var(--line)] bg-[var(--sand)] px-4 py-4 sm:mb-6 sm:px-5" data-testid="today-prompt-card"><Lightbulb size={17} className="mt-0.5 shrink-0 text-[var(--terracotta)]" /><div className="min-w-0 flex-1"><p className="eyebrow" data-testid="prompt-eyebrow">A thought to begin with</p><p className="mt-1 font-serif text-lg italic text-[var(--ink-soft)]" data-testid="today-prompt-text">{prompts[promptIndex]}</p></div><div className="flex items-center gap-1"><Button variant="ghost" size="icon-sm" onClick={() => setPromptIndex((index) => (index + 1) % prompts.length)} data-testid="next-prompt-button" aria-label="Next prompt"><RotateCcw size={15} /></Button><Button variant="ghost" size="icon-sm" onClick={() => setPromptVisible(false)} data-testid="dismiss-prompt-button" aria-label="Dismiss prompt"><X size={15} /></Button></div></div>}
       {!focusMode && !promptVisible && <button className="mb-5 flex items-center gap-2 text-xs font-semibold text-[var(--terracotta)] sm:mb-6" onClick={() => setPromptVisible(true)} data-testid="restore-prompt-button"><Lightbulb size={14} /> Bring back the prompt</button>}
-      <div className="rounded-3xl border border-[var(--line)] bg-[var(--paper)] p-4 shadow-[var(--shadow-md)] sm:rounded-[28px] sm:p-8" data-testid="today-editor-card">
+      <div className="rounded-3xl border border-[var(--line)] bg-[var(--paper)] p-4 shadow-[var(--shadow-md)] transition-colors focus-within:border-[var(--line-strong)] sm:rounded-[28px] sm:p-8" data-testid="today-editor-card">
         <div className="flex items-center justify-between gap-3 border-b border-[var(--line)] pb-4">
           <motion.span
             key={savedTick}
@@ -207,6 +209,7 @@ export default function Today() {
           </motion.span>
           <span className="shrink-0 text-xs tabular-nums text-[var(--muted-ink)]" data-testid="word-count-indicator">{wordCount} {wordCount === 1 ? "word" : "words"}</span>
           <span className="flex shrink-0 items-center gap-1">
+            <Button variant="ghost" size="icon-sm" onClick={() => setCommandPalette(true)} data-testid="editor-search-button" aria-label="Search your pages (⌘K)" title="Search your pages (⌘K)"><Search size={15} /></Button>
             <Button variant="ghost" size="icon-sm" onClick={toggleFocus} aria-pressed={focusMode} data-testid="focus-mode-toggle" aria-label={focusMode ? "Leave focus mode" : "Enter focus mode"} title="Focus mode (F)">{focusMode ? <Minimize2 size={15} /> : <Focus size={15} />}</Button>
             <Button variant="ghost" size="icon-sm" onClick={() => setShowShortcuts(true)} data-testid="shortcuts-help-button" aria-label="Keyboard shortcuts" title="Shortcuts (?)"><Keyboard size={15} /></Button>
           </span>
