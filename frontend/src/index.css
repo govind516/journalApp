@@ -211,6 +211,10 @@
 }
 .heat-cell { display: block; aspect-ratio: 1; width: 100%; min-width: 8px; border-radius: 3px; border: 1px solid transparent; transition: transform 160ms ease, filter 160ms ease; }
 button.heat-cell:hover { transform: scale(1.22); filter: brightness(.94); }
+/* Numbered cells in the zoomed month view: roomy enough for legible dates. */
+.heat-numbered { display: flex; align-items: center; justify-content: center; }
+.heat-numbered > span { font-size: 11px; line-height: 1; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--muted-ink); }
+.heat-3.heat-numbered > span, .heat-4.heat-numbered > span { color: var(--paper); }
 .heat-0 { background: var(--sand); border-color: var(--line); }
 .heat-1 { background: #f0c9a8; }
 .dark .heat-1 { background: #4a2c1c; }

@@ -68,6 +68,7 @@ describe("Calendar", () => {
     expect(await screen.findByTestId("calendar-month-9")).toBeInTheDocument();
     expect(screen.getByTestId("calendar-month-12")).toBeInTheDocument();
     await waitFor(() => expect(screen.getByTestId("calendar-written-count")).toHaveTextContent("3 written days"));
+    expect(screen.getByTestId("calendar-zoom-hint")).toHaveTextContent("choose a month");
     expect(screen.getByTestId("calendar-year-label")).toHaveTextContent(String(new Date().getFullYear()));
   });
 
@@ -84,6 +85,62 @@ describe("Calendar", () => {
     await waitFor(() => expect(screen.getByTestId("calendar-written-count")).toHaveTextContent("0 written days"));
     expect(screen.getByTestId("calendar-empty-caption")).toBeInTheDocument();
     expect(screen.getByTestId("calendar-empty-action").getAttribute("href")).toBe("/app");
+  });
+
+  it("zooms into a month with numbered, navigable days", async () => {
+    const user = userEvent.setup();
+    renderApp(
+      <Routes>
+        <Route path="/app/calendar" element={<Calendar />} />
+        <Route path="/app/today" element={<div data-testid="today-stub">today</div>} />
+      </Routes>,
+      "/app/calendar"
+    );
+    await screen.findByTestId("calendar-month-9");
+    await user.click(screen.getByTestId("calendar-zoom-month-9"));
+    expect(await screen.findByTestId("calendar-month-zoom")).toBeInTheDocument();
+    expect(screen.getByTestId("calendar-zoom-heading")).toHaveTextContent("Sep");
+    expect(screen.getByTestId("calendar-zoom-weekdays")).toHaveTextContent("Mon");
+    expect(screen.queryByTestId("calendar-month-grid")).not.toBeInTheDocument();
+    const year = new Date().getFullYear();
+    const day = screen.getByTestId(`calendar-day-${year}-09-15`);
+    expect(day).toHaveTextContent("15");
+    await user.click(screen.getByTestId("calendar-zoom-back"));
+    expect(await screen.findByTestId("calendar-month-grid")).toBeInTheDocument();
+    expect(screen.queryByTestId("calendar-month-zoom")).not.toBeInTheDocument();
+  });
+
+  it("opens the backfill composer from a zoomed empty day", async () => {
+    const user = userEvent.setup();
+    const year = new Date().getFullYear() - 1;
+    renderApp(
+      <Routes>
+        <Route path="/app/calendar" element={<Calendar />} />
+        <Route path="/app/today" element={<div data-testid="today-stub">today</div>} />
+      </Routes>,
+      "/app/calendar"
+    );
+    await screen.findByTestId("calendar-month-9");
+    await user.click(screen.getByTestId("calendar-previous-year-button"));
+    await user.click(screen.getByTestId("calendar-zoom-month-12"));
+    await user.click(screen.getByTestId(`calendar-day-${year}-12-15`));
+    expect(await screen.findByTestId("today-stub")).toBeInTheDocument();
+  });
+
+  it("leaves zoom mode on year change", async () => {
+    const user = userEvent.setup();
+    renderApp(
+      <Routes>
+        <Route path="/app/calendar" element={<Calendar />} />
+      </Routes>,
+      "/app/calendar"
+    );
+    await screen.findByTestId("calendar-month-9");
+    await user.click(screen.getByTestId("calendar-zoom-month-9"));
+    expect(await screen.findByTestId("calendar-month-zoom")).toBeInTheDocument();
+    await user.click(screen.getByTestId("calendar-previous-year-button"));
+    expect(await screen.findByTestId("calendar-month-grid")).toBeInTheDocument();
+    expect(screen.queryByTestId("calendar-month-zoom")).not.toBeInTheDocument();
   });
 });
 
