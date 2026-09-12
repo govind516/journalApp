@@ -123,4 +123,11 @@ describe("Today editor", () => {
     fireEvent.keyDown(window, { key: "s", metaKey: true });
     await waitFor(() => expect(screen.getByTestId("save-status-indicator")).toHaveTextContent("Saved just now"), { timeout: 5000 });
   });
+
+  it("shows keeping-the-rhythm once today is written", async () => {
+    renderToday();
+    const editor = await screen.findByTestId("today-editor-textarea");
+    await waitFor(() => expect((editor as HTMLTextAreaElement).value).toContain("kitchen floor"));
+    expect(screen.getByTestId("today-reflection-copy")).toHaveTextContent("keeping the rhythm");
+  });
 });
