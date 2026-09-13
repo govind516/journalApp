@@ -105,3 +105,26 @@ cd frontend && npm run build    # tsc + vite build
 * `docs/DECISIONS/ADR-001-postgres-sessions.md` — why DB sessions instead of JWT/Redis.
 * `docs/DECISIONS/ADR-002-no-kafka-mongo.md` — why Postgres-only MVP.
 * `backend/README.md`, `frontend/README.md` — per-package run/test reference.
+
+## Keeping the Backend Warm (Render Free Tier)
+
+Render's free tier spins the backend down after ~15 min of inactivity, causing a
+20–40s cold start on the next request. To keep it warm, an external cron job pings
+the public health endpoint:
+
+- **Dashboard:** <https://console.cron-job.org/dashboard>
+- **Endpoint:** `https://quizapp-backend-lqrc.onrender.com/actuator/health`
+- **Expected:** `200 OK` with `{"status":"UP"}` — no auth required
+  (`/actuator/health` is `permitAll` in `SecurityConfig`, `render.yaml` also uses
+  it as `healthCheckPath`).
+
+**Cron-job.org setup:**
+
+1. Create a new cronjob with the URL above.
+2. Schedule: every 10–14 minutes (must be < 15 min idle window), 24×7.
+3. Request method: `GET`, timeout ≥ 30s (cold starts are slow), expect status `200`.
+
+> Note: `.github/workflows/keep-alive.yml` (`*/10 8-22 * * *`, ~90 runs/day
+> expected) is kept as a fallback but is unreliable — GitHub throttles scheduled
+> workflows on the free tier and it was observed firing only 4–5 times/day.
+> cron-job.org is the primary keep-warm mechanism.
