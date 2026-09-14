@@ -113,7 +113,7 @@ Render's free tier spins the backend down after ~15 min of inactivity, causing a
 the public health endpoint:
 
 - **Dashboard:** <https://console.cron-job.org/dashboard>
-- **Endpoint:** `https://quizapp-backend-lqrc.onrender.com/actuator/health`
+- **Endpoint:** `https://journalapp-backend-aqcv.onrender.com/actuator/health`
 - **Expected:** `200 OK` with `{"status":"UP"}` — no auth required
   (`/actuator/health` is `permitAll` in `SecurityConfig`, `render.yaml` also uses
   it as `healthCheckPath`).
